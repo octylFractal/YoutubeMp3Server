@@ -5,3 +5,14 @@
 .gradle/
 build/
 !/gradle/wrapper/gradle-wrapper.jar
+/.apt_generated/
+
+# js
+/node_modules/
+
+# sass/css
+/.sass-cache/
+
+# app
+/dbs/
+/converted/

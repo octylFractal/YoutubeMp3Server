@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 buildscript {
     repositories {
         mavenCentral()
@@ -14,10 +16,8 @@ buildscript {
 plugins {
     id "com.github.hierynomus.license" version "0.13.1"
     id 'net.researchgate.release' version '2.5.0'
+    id 'play'
 }
-apply plugin: 'jacoco'
-apply plugin: 'aversion-apt'
-apply plugin: 'aversion-maven'
 apply plugin: 'aversion-util'
 apply plugin: 'idea'
 
@@ -25,13 +25,6 @@ util {
     javaVersion = '1.8'
 }
 idea.project.languageLevel = util.javaVersion
-
-mavencfg {
-    description 'Server for converting Youtube videos via youtube-dl.'
-    coords 'kenzierocks', 'YoutubeMp3Server'
-}
-
-defaultTasks 'clean', 'licenseFormat', 'build'
 
 configurations.all {
     resolutionStrategy {
@@ -41,44 +34,47 @@ configurations.all {
 
 repositories {
     mavenCentral()
+    ivy {
+        name "typesafe-ivy-release"
+        url "https://repo.typesafe.com/typesafe/ivy-releases"
+        layout "ivy"
+    }
     maven {
         name "central snapshots"
         url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
+    flatDir {
+        def libExt = System.properties.'java.home' + "/lib/ext/"
+        logger.info("Using $libExt for the extended JRE libraries dependency.")
+        dirs libExt
+    }
 }
 
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compileOnly group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
+    play group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    play group: 'com.sparkjava', name: 'spark-core', version: '2.5.4'
+    play group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
+    play group: 'com.typesafe.play', name: "play-java_$scalaVersion", version: playVersion
+    play group: 'com.typesafe.play', name: "play-logback_$scalaVersion", version: playVersion
+    play group: 'org.mapdb', name: 'mapdb', version: '3.0.3'
+    play group: 'com.google.guava', name: 'guava', version: '19.0'
+    play group: 'ch.qos.logback', name: 'logback-core', version: '1.1.9'
+    play group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.9'
 
-    addAPTReqWComp group: 'com.google.guava', name: 'guava', version: '19.0'
-    addAPT group: 'com.google.auto.service', name: 'auto-service', version: '1.0-SNAPSHOT'
-    addAPT group: 'com.google.auto.value', name: 'auto-value', version: '1.3'
-    addAPTReq name: 'aopalliance'
-    addAPTReq name: 'asm'
-    addAPTReq name: 'auto-value'
-    addAPTReq name: 'auto-common'
-    addAPTReq name: 'cglib'
-    addAPTReq name: 'commons-collections'
-    addAPTReq name: 'commons-lang'
-    addAPTReq name: 'dagger'
-    addAPTReq name: 'javawriter'
-    addAPTReq name: 'javax.inject'
-    addAPTReq name: 'velocity'
+    // require JavaFX for properties -- it should be available...
+    play name: 'jfxrt'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+//    play files('/Users/kenzietogami/.gradle/caches/3.3/workerMain/gradle-worker.jar')
+//    play files(fileTree('/usr/local/Cellar/gradle/3.3/libexec/lib/'))
+
+    playTest group: 'junit', name: 'junit', version: '4.12'
 }
-
-javadoc {
-    options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-configure([compileJava, compileTestJava]) {
-    options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
-    options.deprecation = true
-    options.encoding = 'UTF-8'
-    options.incremental = true
-    options.fork = true
+model {
+    components {
+        play {
+            platform play: playVersion, scala: scalaVersion
+        }
+    }
 }
 
 license {
@@ -96,10 +92,72 @@ license {
     }
 }
 
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
+// Super exciting! We're doing ES6 transpilation!
+model {
+    components {
+        play {
+            binaries.all { binary ->
+                tasks.create("transpilePlay${binary.name.capitalize()}Javascript", TranspileJavascript) { task ->
+                    sourceDir = file("transpile-source/javascript")
+                    def destDirBase = project.file("${buildDir}/play${binary.name.capitalize()}/transpiled")
+                    destinationDir = new File(destDirBase, "javascript")
+
+                    // Hook this task into the binary
+                    binary.assets.addAssetDir destDirBase
+                    binary.assets.builtBy task
+                }
+                tasks.create("transpilePlay${binary.name.capitalize()}Scss", TranspileSass) { task ->
+                    sourceDir = file("transpile-source/scss")
+                    def destDirBase = project.file("${buildDir}/play${binary.name.capitalize()}/transpiled")
+                    destinationDir = new File(destDirBase, "stylesheets")
+
+                    // Hook this task into the binary
+                    binary.assets.addAssetDir destDirBase
+                    binary.assets.builtBy task
+                }
+            }
+        }
     }
 }
-check.dependsOn jacocoTestReport
+
+class TranspileJavascript extends DefaultTask {
+    {
+        // we should redo when these change
+        inputs.files("package.json", ".babelrc")
+    }
+
+    @InputDirectory
+    File sourceDir
+
+    @OutputDirectory
+    File destinationDir
+
+    @TaskAction
+    void generateAssets() {
+        project.exec {
+            executable project.file("./node_modules/babel-cli/bin/babel.js")
+            args '-d', destinationDir, sourceDir
+        }
+    }
+}
+
+class TranspileSass extends DefaultTask {
+    @InputDirectory
+    File sourceDir
+
+    @OutputDirectory
+    File destinationDir
+
+    @TaskAction
+    void generateAssets() {
+        def cssMiddleman = Files.createTempDirectory("yt-mp3-css-middleman").toFile()
+        project.exec {
+            executable 'sass'
+            args '--scss', '--sourcemap=none', '--update', "$sourceDir:$cssMiddleman"
+        }
+        project.exec {
+            executable project.file("./node_modules/postcss-cli/bin/postcss")
+            args = ['--use', 'autoprefixer', '--dir', destinationDir] + project.fileTree(cssMiddleman).files
+        }
+    }
+}

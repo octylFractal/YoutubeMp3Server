@@ -1,0 +1,29 @@
+{
+  "name": "youtube-mp3-server",
+  "version": "1000.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kenzierocks/YoutubeMp3Server.git"
+  },
+  "author": "Kenzie Togami",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kenzierocks/YoutubeMp3Server/issues"
+  },
+  "browserslist": [">1%", "last 2 versions", "iOS >= 8"],
+  "homepage": "https://github.com/kenzierocks/YoutubeMp3Server#readme",
+  "devDependencies": {
+    "autoprefixer": "^6.7.2",
+    "babel-cli": "^6.22.2",
+    "babel-preset-env": "^1.1.8",
+    "postcss-cli": "^2.6.0"
+  }
+}

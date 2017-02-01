@@ -1,0 +1,168 @@
+#download-box {
+    white-space: nowrap;
+}
+
+$border-primary: #1F3E7C;
+$border-secondary: #18E7E7;
+
+$primary-border-width: 4px;
+
+$arrow-holder-padding: 35px;
+
+$arrow-border-middle-offset: 40px;
+$arrow-middle-offset: $arrow-border-middle-offset + 10px;
+$arrow-border-cross-offset: -35px;
+$arrow-cross-offset: $arrow-border-cross-offset + 10px;
+
+$arrow-border-side-length: 30px;
+$arrow-border-height: 52px;
+$arrow-side-length: 20px;
+$arrow-height: 36px;
+
+$transition-details: transform 1s, top 1s, bottom 1s, left 1s, right 1s;
+
+$transform-smaller-triangle: 50% calc(50% + 5px / 2);
+
+$z-top: 1;
+$z-bottom: 0;
+
+.info-box {
+    min-height: 200px;
+}
+
+/* a nice look for larger screens */
+@media (min-width: 768px) {
+    .row > .col-md {
+        &:not(:last-child) {
+            padding-right: $arrow-holder-padding;
+            border-right: $primary-border-width solid $border-primary;
+        }
+
+        &:not(:first-child) {
+            padding-left: $arrow-holder-padding;
+        }
+
+        /* Arrows are fun! */
+        &:not(:last-child) {
+            & > .arrow-box {
+                // the smaller triangle must remain on "top" at all times
+                &.rotate-arrow {
+                    @each $class in before, after {
+                        &:#{$class} {
+                            @if $class == after {
+                                transform-origin: $transform-smaller-triangle;
+                            }
+                            transform: rotateY(180deg);
+                        }
+                    }
+                }
+                &:before {
+                    content: ' ';
+                    width: 0;
+                    height: 0;
+                    position: absolute;
+                    top: $arrow-border-middle-offset;
+                    right: $arrow-border-cross-offset;
+                    border: {
+                        style: solid;
+                        width: $arrow-border-side-length 0 $arrow-border-side-length $arrow-border-height;
+                        color: transparent transparent transparent $border-primary;
+                    }
+                    transform: rotateY(360deg);
+                }
+                &.transform-active:before {
+                    transition: $transition-details;
+                }
+
+                &:after {
+                    content: ' ';
+                    width: 0;
+                    height: 0;
+                    position: absolute;
+                    top: $arrow-middle-offset;
+                    right: $arrow-cross-offset;
+                    border: {
+                        style: solid;
+                        width: $arrow-side-length 0 $arrow-side-length $arrow-height;
+                        color: transparent transparent transparent $border-secondary;
+                    }
+                    transform-origin: $transform-smaller-triangle;
+                    transform: rotateY(360deg);
+                }
+                &.transform-active:after {
+                    transition: $transition-details;
+                }
+            }
+        }
+    }
+}
+
+/* similar look for phones, but going down */
+@media (max-width: 768px) {
+    .row > .col-md {
+        &:not(:last-child) {
+            padding-bottom: $arrow-holder-padding;
+            border-bottom: $primary-border-width solid $border-primary;
+        }
+
+        &:not(:first-child) {
+            padding-top: $arrow-holder-padding;
+        }
+
+        /* Arrows are fun! */
+        &:not(:last-child) {
+            & > .arrow-box {
+                &.rotate-arrow {
+                    @each $class in before, after {
+                        &:#{$class} {
+                            @if $class == after {
+                                transform-origin: $transform-smaller-triangle;
+                            }
+                            transform: rotateX(180deg);
+                        }
+                    }
+                }
+                &:before {
+                    content: ' ';
+                    width: 0;
+                    height: 0;
+                    position: absolute;
+                    left: calc(50% - #{$arrow-border-middle-offset});
+                    bottom: $arrow-border-cross-offset;
+                    border: {
+                        style: solid;
+                        width: $arrow-border-height $arrow-border-side-length 0 $arrow-border-side-length;
+                        color: $border-primary transparent transparent transparent;
+                    }
+                    transform: rotateX(360deg);
+                }
+                &.transform-active:before {
+                    transition: $transition-details;
+                }
+
+                &:after {
+                    content: ' ';
+                    width: 0;
+                    height: 0;
+                    position: absolute;
+                    left: calc(50% - #{$arrow-middle-offset / 2 + 5});
+                    bottom: $arrow-cross-offset;
+                    border: {
+                        style: solid;
+                        width: $arrow-height $arrow-side-length 0 $arrow-side-length;
+                        color: $border-secondary transparent transparent transparent;
+                    }
+                    transform-origin: $transform-smaller-triangle;
+                    transform: rotateX(360deg);
+                }
+                &.transform-active:after {
+                    transition: $transition-details;
+                }
+            }
+        }
+    }
+}
+
+pre {
+    text-align: left;
+}
