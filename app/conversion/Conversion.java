@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import conversion.videoid.VideoId;
 import conversion.videoid.VideoIdFinder;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -80,6 +81,7 @@ public class Conversion implements Runnable {
     private final String id;
     private final String video;
     private transient final Path workingDir;
+    private transient final VideoId videoId;
     private transient final String storeName;
     private transient final ObjectProperty<Status> statusProperty =
             new SimpleObjectProperty<>(this, "status", Status.CREATED);
@@ -106,9 +108,9 @@ public class Conversion implements Runnable {
 
         try {
             workingDir = WORKING_DIR.resolve(id);
-            storeName = VideoIdFinder.findId(video).map(videoId ->
-                    videoId.getProvider() + "-" + videoId.getId()
-            ).orElseThrow(() -> new IllegalArgumentException("Unknown video type " + video));
+            videoId = VideoIdFinder.findId(video)
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown video type " + video));
+            storeName = videoId.getProvider() + "-" + videoId.getId();
         } catch (Exception e) {
             // setup failure if it occurs early
             canFireEvents = true;
@@ -227,7 +229,7 @@ public class Conversion implements Runnable {
                 Path resultFile = getResultFileInWorkingDir();
                 checkNotNull(resultFile, "no result given");
 
-                fileName = resultFile.getFileName().toString();
+                fileName = stripId(resultFile.getFileName().toString());
 
                 Files.move(resultFile, DEST_DIR.resolve(storeName));
 
@@ -245,6 +247,11 @@ public class Conversion implements Runnable {
             rawOutput = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(cap.toByteArray())).toString();
             ConversionManager.refresh(this);
         }
+    }
+
+    private String stripId(String fileName) {
+        // <video-name>-<id>.mp3
+        return fileName.replace("-" + videoId.getId(), "");
     }
 
     private Process newProcess() {
