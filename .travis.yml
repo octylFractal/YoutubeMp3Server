@@ -20,6 +20,8 @@ addons:
 # Code Coverage!
 before_install:
   - pip install --user codecov
+  - npm install
+  - gem install sass
 after_success:
   - codecov
 after_script:
