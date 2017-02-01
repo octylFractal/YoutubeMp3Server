@@ -20,6 +20,8 @@ addons:
 # Code Coverage!
 before_install:
   - pip install --user codecov
+  - nvm install 6
+  - rvm install 2.4.0
   - npm install
   - gem install sass
 after_success:
