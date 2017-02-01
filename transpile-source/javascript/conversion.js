@@ -3,6 +3,7 @@ let $downloadBox;
 let $errorDisplay;
 let $progressBox;
 let $rotateArrow;
+let $progressBar;
 
 let activeSse;
 
@@ -11,13 +12,15 @@ function initializeTargets() {
     $progressBox = $("#progress-box");
     $downloadBox = $("#download-box");
     $errorDisplay = $("#error-display");
-    $rotateArrow = $("#actual-arrow-holder");
+    $rotateArrow = $(".before-arrow, .after-arrow");
+    $progressBar = $("#progress-bar");
 }
 
 function emptyData() {
-    [$statusText, $statusText, $downloadBox, $errorDisplay, $progressBox].forEach(
+    [$statusText, $statusText, $errorDisplay, $progressBox].forEach(
         jq => jq.empty()
     );
+    $downloadBox.text("");
 }
 
 function tearDownSse() {
@@ -41,6 +44,7 @@ function setupSse(id) {
         const status = e.data;
         if (status === Status.FAILED) {
             $statusText.text("Failed!");
+            setProgressBar("danger", 100);
             $.get(`/mp3ify/${id}/status`, data => $errorDisplay.text(data.reason));
         } else if (status === Status.SUCCESSFUL) {
             $statusText.text("Conversion complete!");
@@ -56,25 +60,66 @@ function setupSse(id) {
 }
 
 function onSuccess(id) {
+    rotateArrow(ARROW_LEFT);
+    setProgressBar("success", 100);
     $.get(`/mp3ify/${id}/fileName`, fileName => {
         $downloadBox['html'](`<a href="/mp3ify/${id}/download">Download ${fileName}!</a>`);
     });
 }
 
-function rotateArrow() {
-    $rotateArrow.toggleClass("rotate-arrow");
+const colors = ["info", "warning", "success", "danger"];
+
+function setProgressBar(color, percent) {
+    const e = $progressBar;
+    colors.forEach(c => e.removeClass(`bg-${c}`));
+    e.addClass(`bg-${color}`);
+    e.css('width', percent + "%");
+    e.attr('aria-valuenow', percent);
+}
+
+let arrowRotation = 0;
+let arrowPromise = undefined;
+
+const ARROW_LEFT = 0;
+const ARROW_RIGHT = 1;
+
+function rotateArrow(side = undefined) {
+    if (arrowPromise !== undefined) {
+        arrowPromise = arrowPromise.then(() => rotateArrow(side));
+        return;
+    }
+    const isCurrentlyRight = arrowRotation % 360 === 0;
+    if (side === ARROW_LEFT) {
+        if (isCurrentlyRight) {
+            arrowRotation += 180;
+        }
+    } else if (side === ARROW_RIGHT) {
+        if (!isCurrentlyRight) {
+            arrowRotation += 180;
+        }
+    } else {
+        arrowRotation += 180;
+    }
+    arrowPromise = new Promise(resolve => $rotateArrow.velocity({
+        rotateZ: arrowRotation + "deg"
+    }, {
+        complete: resolve
+    }));
+    arrowPromise.then(() => arrowPromise = undefined);
 }
 
 $(() => {
     initializeTargets();
     const $videoForm = $("#video-form");
     $videoForm.submit(e => {
-        rotateArrow();
         e.preventDefault();
+
+        rotateArrow(ARROW_RIGHT);
 
         const video = $("#video").val();
 
         emptyData();
+        setProgressBar("info", 50);
         $['post']("/mp3ify", {
             'video': video
         })['done'](id => {
@@ -82,7 +127,8 @@ $(() => {
             $statusText.text(`Converting...`);
             setupSse(id);
         })['fail']((jqXHR, textStatus, error) => {
-            $statusText.text(`Error: ${error}`)
+            setProgressBar("danger", 100);
+            $errorDisplay.text(`Error: ${error}`)
         })
     });
 });

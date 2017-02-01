@@ -76,6 +76,7 @@ public class EventListener implements Iterable<Optional<EventSource.Event>>, Lis
                     .iterator();
             while (bytes.hasNext()) {
                 outputStream.write(bytes.next());
+                outputStream.flush();
             }
             return null;
         });

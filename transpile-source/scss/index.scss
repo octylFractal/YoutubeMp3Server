@@ -1,5 +1,5 @@
-#download-box {
-    white-space: nowrap;
+#download-box-row {
+    margin: 0;
 }
 
 $border-primary: #1F3E7C;
@@ -19,9 +19,18 @@ $arrow-border-height: 52px;
 $arrow-side-length: 20px;
 $arrow-height: 36px;
 
+$larger-triangle-middle: calc(50% - #{$arrow-border-middle-offset});
+$smaller-triangle-middle: calc(50% - #{$arrow-middle-offset / 2 + 5});
+
 $transition-details: transform 1s, top 1s, bottom 1s, left 1s, right 1s;
 
-$transform-smaller-triangle: 50% calc(50% + 5px / 2);
+$transform-origin-offset: 10px;
+
+$transform-larger-triangle-a: 50%;
+$transform-larger-triangle-b: calc(50% - #{$transform-origin-offset});
+
+$transform-smaller-triangle-a: 50%;
+$transform-smaller-triangle-b: calc(50% + 5px / 2 - #{$transform-origin-offset});
 
 $z-top: 1;
 $z-bottom: 0;
@@ -32,7 +41,7 @@ $z-bottom: 0;
 
 /* a nice look for larger screens */
 @media (min-width: 768px) {
-    .row > .col-md {
+    .row > .border-stuff {
         &:not(:last-child) {
             padding-right: $arrow-holder-padding;
             border-right: $primary-border-width solid $border-primary;
@@ -45,52 +54,34 @@ $z-bottom: 0;
         /* Arrows are fun! */
         &:not(:last-child) {
             & > .arrow-box {
-                // the smaller triangle must remain on "top" at all times
-                &.rotate-arrow {
-                    @each $class in before, after {
-                        &:#{$class} {
-                            @if $class == after {
-                                transform-origin: $transform-smaller-triangle;
-                            }
-                            transform: rotateY(180deg);
-                        }
-                    }
-                }
-                &:before {
+                & .before-arrow {
                     content: ' ';
                     width: 0;
                     height: 0;
                     position: absolute;
-                    top: $arrow-border-middle-offset;
+                    top: $larger-triangle-middle;
                     right: $arrow-border-cross-offset;
                     border: {
                         style: solid;
                         width: $arrow-border-side-length 0 $arrow-border-side-length $arrow-border-height;
                         color: transparent transparent transparent $border-primary;
                     }
-                    transform: rotateY(360deg);
-                }
-                &.transform-active:before {
-                    transition: $transition-details;
+                    transform-origin: $transform-larger-triangle-b $transform-larger-triangle-a;
                 }
 
-                &:after {
+                & .after-arrow {
                     content: ' ';
                     width: 0;
                     height: 0;
                     position: absolute;
-                    top: $arrow-middle-offset;
+                    top: $smaller-triangle-middle;
                     right: $arrow-cross-offset;
                     border: {
                         style: solid;
                         width: $arrow-side-length 0 $arrow-side-length $arrow-height;
                         color: transparent transparent transparent $border-secondary;
                     }
-                    transform-origin: $transform-smaller-triangle;
-                    transform: rotateY(360deg);
-                }
-                &.transform-active:after {
-                    transition: $transition-details;
+                    transform-origin: $transform-smaller-triangle-b $transform-smaller-triangle-a;
                 }
             }
         }
@@ -99,7 +90,7 @@ $z-bottom: 0;
 
 /* similar look for phones, but going down */
 @media (max-width: 768px) {
-    .row > .col-md {
+    .row > .border-stuff {
         &:not(:last-child) {
             padding-bottom: $arrow-holder-padding;
             border-bottom: $primary-border-width solid $border-primary;
@@ -112,51 +103,34 @@ $z-bottom: 0;
         /* Arrows are fun! */
         &:not(:last-child) {
             & > .arrow-box {
-                &.rotate-arrow {
-                    @each $class in before, after {
-                        &:#{$class} {
-                            @if $class == after {
-                                transform-origin: $transform-smaller-triangle;
-                            }
-                            transform: rotateX(180deg);
-                        }
-                    }
-                }
-                &:before {
+                & .before-arrow {
                     content: ' ';
                     width: 0;
                     height: 0;
                     position: absolute;
-                    left: calc(50% - #{$arrow-border-middle-offset});
+                    left: $larger-triangle-middle;
                     bottom: $arrow-border-cross-offset;
                     border: {
                         style: solid;
                         width: $arrow-border-height $arrow-border-side-length 0 $arrow-border-side-length;
                         color: $border-primary transparent transparent transparent;
                     }
-                    transform: rotateX(360deg);
-                }
-                &.transform-active:before {
-                    transition: $transition-details;
+                    transform-origin: $transform-larger-triangle-a $transform-larger-triangle-b;
                 }
 
-                &:after {
+                & .after-arrow {
                     content: ' ';
                     width: 0;
                     height: 0;
                     position: absolute;
-                    left: calc(50% - #{$arrow-middle-offset / 2 + 5});
+                    left: $smaller-triangle-middle;
                     bottom: $arrow-cross-offset;
                     border: {
                         style: solid;
                         width: $arrow-height $arrow-side-length 0 $arrow-side-length;
                         color: $border-secondary transparent transparent transparent;
                     }
-                    transform-origin: $transform-smaller-triangle;
-                    transform: rotateX(360deg);
-                }
-                &.transform-active:after {
-                    transition: $transition-details;
+                    transform-origin: $transform-smaller-triangle-a $transform-smaller-triangle-b;
                 }
             }
         }

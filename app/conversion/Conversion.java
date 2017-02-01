@@ -243,6 +243,7 @@ public class Conversion implements Runnable {
             throw Throwables.propagate(e);
         } finally {
             rawOutput = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(cap.toByteArray())).toString();
+            ConversionManager.refresh(this);
         }
     }
 
