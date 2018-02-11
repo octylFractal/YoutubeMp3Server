@@ -18,7 +18,11 @@
   "bugs": {
     "url": "https://github.com/kenzierocks/YoutubeMp3Server/issues"
   },
-  "browserslist": [">1%", "last 2 versions", "iOS >= 8"],
+  "browserslist": [
+    ">1%",
+    "last 2 versions",
+    "iOS >= 8"
+  ],
   "homepage": "https://github.com/kenzierocks/YoutubeMp3Server#readme",
   "devDependencies": {
     "autoprefixer": "^6.7.2",
