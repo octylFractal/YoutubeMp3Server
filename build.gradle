@@ -45,7 +45,7 @@ dependencies {
     compile group: 'org.mapdb', name: 'mapdb', version: '3.0.5'
     compile group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
     compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    compile group: 'com.techshroom', name: 'templar', version: '0.0.8-SNAPSHOT'
+    compile group: 'com.techshroom', name: 'templar', version: '0.0.8'
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: project.jacksonVersion
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.jacksonVersion
