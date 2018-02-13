@@ -1,4 +1,4 @@
-#parse ("./main.html.vm")
+#parse ("main.html.vm")
 #@main("Youtube MP3 Server" "index" "conversion")
     <!-- We are implicitly in a container -->
     <div class="row">

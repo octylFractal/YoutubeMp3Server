@@ -44,7 +44,8 @@ import com.google.common.io.ByteStreams;
 public class AssetCacher {
 
     private static String assetKey(URL resource) {
-        String[] parts = resource.getPath().split("\\.", 2);
+        String[] part = resource.getPath().split("/");
+        String[] parts = part[part.length - 1].split("\\.", 2);
         String ext = "";
         if (parts.length > 1) {
             ext = "." + parts[1];
