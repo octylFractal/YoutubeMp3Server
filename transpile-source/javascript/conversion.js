@@ -120,8 +120,9 @@ $(() => {
 
         emptyData();
         setProgressBar("info", 50);
-        $['post']("/mp3ify", {
-            'video': video
+        $['post']({
+            url: '/mp3ify',
+            data: JSON.stringify({'video': video})
         })['done'](id => {
             console.log(`Converting ${video}, job ID = ${id}`);
             $statusText.text(`Converting...`);

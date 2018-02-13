@@ -1,0 +1,17 @@
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%thread/%level][%logger{1}]: %msg %n</pattern>
+		</encoder>
+	</appender>
+	
+	<logger name="com.techshroom.lettar.pipe.impl.SimplePipeline" level="INFO"/>
+	<logger name="com.techshroom.lettar.pipe.PipelineRouterInitializer" level="INFO"/>
+	<logger name="pre-codec-logger" level="INFO"/>
+	<logger name="pre-router-logger" level="INFO"/>
+	<logger name="templar-server" level="INFO"/>
+
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>
