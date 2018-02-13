@@ -2,7 +2,7 @@ import java.nio.file.Files
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
         maven {
             url "https://oss.sonatype.org/content/repositories/releases/"
         }
@@ -13,6 +13,7 @@ buildscript {
     }
 }
 plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
     id "com.github.hierynomus.license" version "0.14.0"
     id 'net.researchgate.release' version '2.6.0'
 }
@@ -92,6 +93,14 @@ license {
         java = 'SLASHSTAR_STYLE'
     }
 }
+
+jar {
+    manifest {
+        attributes("Main-Class": "com.techshroom.ytmp3.YoutubeMp3Server")
+    }
+}
+
+assemble.dependsOn(shadowJar)
 
 // Super exciting! We're doing ES6 transpilation!
 ext.destDirBase = project.file("${buildDir}/transpiled")
