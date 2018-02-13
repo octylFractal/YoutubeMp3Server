@@ -56,6 +56,14 @@ function setupSse(id) {
     source.addEventListener("outputLine", e => {
         $progressBox.append(e.data + '\n');
     });
+    source.addEventListener("carrigeReturn", e => {
+        $progressBox.text((i, oldText) => {
+            // from 1 before end, as end is a newline as well
+            const lastNewline = oldText.lastIndexOf('\n', oldText.length - 2);
+            const newText = oldText.substring(0, lastNewline + 1);
+            return newText;
+        })
+    });
     activeSse = source;
 }
 

@@ -323,6 +323,9 @@ public class Conversion implements Runnable {
             if (b == '\n' || b == '\r') {
                 // new line, new event
                 pushLine();
+                if (b == '\r') {
+                    pushCarrigeReturn();
+                }
                 return;
             }
             newlineCapture.write(b);
@@ -335,6 +338,10 @@ public class Conversion implements Runnable {
             if (newlineCapture.size() > 0) {
                 pushLine();
             }
+        }
+
+        private void pushCarrigeReturn() {
+            pushEvent("carrigeReturn", "");
         }
 
         private void pushLine() {
