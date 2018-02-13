@@ -4,27 +4,25 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            name "central snapshots"
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
+            url "https://oss.sonatype.org/content/repositories/releases/"
         }
     }
 
     dependencies {
-        classpath group: 'com.techshroom', name: 'Aversion', version: '3.0.0'
+        classpath group: 'com.techshroom', name: 'Aversion', version: '3.1.0'
     }
 }
 plugins {
-    id "com.github.hierynomus.license" version "0.13.1"
-    id 'net.researchgate.release' version '2.5.0'
-    id 'play'
+    id "com.github.hierynomus.license" version "0.14.0"
+    id 'net.researchgate.release' version '2.6.0'
 }
+apply plugin: 'aversion-apt'
 apply plugin: 'aversion-util'
-apply plugin: 'idea'
+apply plugin: 'java'
 
 util {
     javaVersion = '1.8'
 }
-idea.project.languageLevel = util.javaVersion
 
 configurations.all {
     resolutionStrategy {
@@ -34,15 +32,6 @@ configurations.all {
 
 repositories {
     mavenCentral()
-    ivy {
-        name "typesafe-ivy-release"
-        url "https://repo.typesafe.com/typesafe/ivy-releases"
-        layout "ivy"
-    }
-    maven {
-        name "central snapshots"
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
     flatDir {
         def libExt = System.properties.'java.home' + "/lib/ext/"
         logger.info("Using $libExt for the extended JRE libraries dependency.")
@@ -51,30 +40,42 @@ repositories {
 }
 
 dependencies {
-    play group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    play group: 'com.sparkjava', name: 'spark-core', version: '2.5.4'
-    play group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
-    play group: 'com.typesafe.play', name: "play-java_$scalaVersion", version: playVersion
-    play group: 'com.typesafe.play', name: "play-logback_$scalaVersion", version: playVersion
-    play group: 'org.mapdb', name: 'mapdb', version: '3.0.3'
-    play group: 'com.google.guava', name: 'guava', version: '19.0'
-    play group: 'ch.qos.logback', name: 'logback-core', version: '1.1.9'
-    play group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.9'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    compileOnly group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
+    compile group: 'org.mapdb', name: 'mapdb', version: '3.0.5'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    compile group: 'com.techshroom', name: 'templar', version: '0.0.8-SNAPSHOT'
+
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: project.jacksonVersion
+
+    compile group: 'org.apache.velocity', name: 'velocity-engine-core', version: '2.0'
+    compile group: 'org.apache.tika', name: 'tika-core', version: '1.17'
+
+    addAPTReqWComp group: 'com.google.guava', name: 'guava', version: '24.0-jre'
+    addAPT group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc3'
+    addAPT group: 'com.google.auto.value', name: 'auto-value', version: '1.5.3'
+    addAPTReq name: 'aopalliance'
+    addAPTReq name: 'asm'
+    addAPTReq name: 'auto-value'
+    addAPTReq name: 'auto-common'
+    addAPTReq name: 'cglib'
+    addAPTReq name: 'commons-collections'
+    addAPTReq name: 'commons-lang'
+    addAPTReq name: 'dagger'
+    addAPTReq name: 'javawriter'
+    addAPTReq name: 'javax.inject'
+    addAPTReq name: 'velocity'
 
     // require JavaFX for properties -- it should be available...
-    play name: 'jfxrt'
+    compile name: 'jfxrt'
 
-//    play files('/Users/kenzietogami/.gradle/caches/3.3/workerMain/gradle-worker.jar')
-//    play files(fileTree('/usr/local/Cellar/gradle/3.3/libexec/lib/'))
-
-    playTest group: 'junit', name: 'junit', version: '4.12'
-}
-model {
-    components {
-        play {
-            platform play: playVersion, scala: scalaVersion
-        }
-    }
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 license {
@@ -93,31 +94,19 @@ license {
 }
 
 // Super exciting! We're doing ES6 transpilation!
-model {
-    components {
-        play {
-            binaries.all { binary ->
-                tasks.create("transpilePlay${binary.name.capitalize()}Javascript", TranspileJavascript) { task ->
-                    sourceDir = file("transpile-source/javascript")
-                    def destDirBase = project.file("${buildDir}/play${binary.name.capitalize()}/transpiled")
-                    destinationDir = new File(destDirBase, "javascript")
+ext.destDirBase = project.file("${buildDir}/transpiled")
+tasks.create("transpileJavascript", TranspileJavascript) { task ->
+    sourceDir = file("transpile-source/javascript")
+    destinationDir = new File(project.destDirBase, "javascript")
+}
+tasks.create("transpileScss", TranspileSass) { task ->
+    sourceDir = file("transpile-source/scss")
+    destinationDir = new File(project.destDirBase, "stylesheets")
+}
+task transpileResources(dependsOn: [transpileJavascript, transpileScss]);
 
-                    // Hook this task into the binary
-                    binary.assets.addAssetDir destDirBase
-                    binary.assets.builtBy task
-                }
-                tasks.create("transpilePlay${binary.name.capitalize()}Scss", TranspileSass) { task ->
-                    sourceDir = file("transpile-source/scss")
-                    def destDirBase = project.file("${buildDir}/play${binary.name.capitalize()}/transpiled")
-                    destinationDir = new File(destDirBase, "stylesheets")
-
-                    // Hook this task into the binary
-                    binary.assets.addAssetDir destDirBase
-                    binary.assets.builtBy task
-                }
-            }
-        }
-    }
+sourceSets.main {
+    output.dir(project.destDirBase, builtBy: 'transpileResources')
 }
 
 class TranspileJavascript extends DefaultTask {

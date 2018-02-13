@@ -1,0 +1,53 @@
+#macro (main $title $css $js)
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>$title</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+        <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.22.0/polyfill.min.js"
+        integrity="sha256-2nu8qdFj9AM9XRd75EAp3XRGEKiRprWL4hPMhYkj150="
+        crossorigin="anonymous"></script>
+        <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/event-source-polyfill/0.0.7/eventsource.min.js"
+        integrity="sha256-CDGE4VgkI5jAecCKuZ+rW6h7V0ZzE9Xucxwg86Ug8ls="
+        crossorigin="anonymous"></script>
+        <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.4.2/velocity.min.js"
+        integrity="sha384-PboaeFztrfqKPt9mRPdMdDHTqStvSpVg7UlM4LOaBLe0y3ej6wMUYa41lrd6hBcx"
+        crossorigin="anonymous"></script>
+
+        <!-- Bootstrap -->
+        <link
+        rel="stylesheet"
+        href="/assets/stylesheets/bootswatch-spacelab.min.css">
+
+        <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+        <script
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+
+        <!-- End Bootstrap -->
+
+        <link href="/assets/stylesheets/${css}.css" rel="stylesheet">
+
+        <script src="/assets/javascript/${js}.js"></script>
+    </head>
+    <body>
+        <h2 class="text-info text-center">The Youtube to MP3 Conversion Server!</h2>
+        <div class="container">
+        	$!bodyContent
+        </div>
+    </body>
+</html>
+#end
