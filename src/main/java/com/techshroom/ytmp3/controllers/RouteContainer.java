@@ -163,7 +163,9 @@ public class RouteContainer {
         return SimpleResponse.builder()
                 .ok_200()
                 .body(stream)
-                .headers(ImmutableMap.of("content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\""))
+                .headers(ImmutableMap.of(
+                        "content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\"",
+                        "content-length", String.valueOf(Files.size(conversion.getResultFile()))))
                 .build();
     }
 
@@ -179,7 +181,9 @@ public class RouteContainer {
         File fileResource = assets.getAsset(resource).toFile();
 
         return SimpleResponse.builder()
-                .headers(ImmutableMap.of("content-type", getContentType(fileResource)))
+                .headers(ImmutableMap.of(
+                        "content-type", getContentType(fileResource),
+                        "content-length", String.valueOf(fileResource.length())))
                 .ok_200()
                 .body(new BufferedInputStream(new FileInputStream(fileResource)))
                 .build();

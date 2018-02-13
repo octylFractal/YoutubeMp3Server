@@ -291,6 +291,7 @@ public class Conversion implements Runnable {
                 Files.createDirectories(workingDir);
             }
             return new ProcessBuilder(YOUTUBE_DL,
+                    "--prefer-ffmpeg",
                     "--extract-audio",
                     "--audio-format", "mp3",
                     "--add-metadata",
