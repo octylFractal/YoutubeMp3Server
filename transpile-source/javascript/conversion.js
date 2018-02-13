@@ -53,16 +53,21 @@ function setupSse(id) {
             $statusText.text("Converting...");
         }
     });
+    let doCr = false;
     source.addEventListener("outputLine", e => {
+        if (doCr) {
+            $progressBox.text((i, oldText) => {
+                // from 1 before end, as end is a newline as well
+                const lastNewline = oldText.lastIndexOf('\n', oldText.length - 2);
+                const newText = oldText.substring(0, lastNewline + 1);
+                return newText;
+            });
+            doCr = false;
+        }
         $progressBox.append(e.data + '\n');
     });
     source.addEventListener("carrigeReturn", e => {
-        $progressBox.text((i, oldText) => {
-            // from 1 before end, as end is a newline as well
-            const lastNewline = oldText.lastIndexOf('\n', oldText.length - 2);
-            const newText = oldText.substring(0, lastNewline + 1);
-            return newText;
-        })
+        doCr = true;
     });
     activeSse = source;
 }
