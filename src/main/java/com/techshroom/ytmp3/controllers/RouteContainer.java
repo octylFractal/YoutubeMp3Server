@@ -159,13 +159,27 @@ public class RouteContainer {
         if (conversion == null) {
             return SimpleResponse.of(404, id);
         }
+        switch (conversion.getStatus()) {
+            case SUCCESSFUL:
+                break;
+            case FAILED:
+                return SimpleResponse.of(409, ImmutableMap.of(
+                        "error", "conversion.failed"));
+            default:
+                return SimpleResponse.of(409, ImmutableMap.of(
+                        "error", "conversion.not.finished",
+                        "status", conversion.getStatus().toString()));
+        }
         InputStream stream = Files.newInputStream(conversion.getResultFile());
+        stream = new BufferedInputStream(stream, 8192);
         return SimpleResponse.builder()
                 .ok_200()
                 .body(stream)
                 .headers(ImmutableMap.of(
                         "content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\"",
-                        "content-length", String.valueOf(Files.size(conversion.getResultFile()))))
+                        "content-length", String.valueOf(Files.size(conversion.getResultFile())),
+                        // ensure netty gzip is not applied
+                        "content-encoding", "identity"))
                 .build();
     }
 
