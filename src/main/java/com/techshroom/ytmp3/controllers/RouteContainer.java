@@ -25,6 +25,7 @@
 package com.techshroom.ytmp3.controllers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -58,13 +60,14 @@ import com.techshroom.lettar.pipe.builtins.accept.Produces;
 import com.techshroom.lettar.pipe.builtins.method.Method;
 import com.techshroom.lettar.pipe.builtins.path.Path;
 import com.techshroom.lettar.routing.HttpMethod;
-import com.techshroom.ytmp3.JsonBodyCodec;
+import com.techshroom.templar.jackson.JsonBodyCodec;
 import com.techshroom.ytmp3.TemplateRenderer;
 import com.techshroom.ytmp3.VelocityTemplateRenderer;
 import com.techshroom.ytmp3.conversion.Conversion;
 import com.techshroom.ytmp3.conversion.ConversionManager;
 import com.techshroom.ytmp3.conversion.Status;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import javafx.collections.ObservableList;
 
 public class RouteContainer {
@@ -78,6 +81,43 @@ public class RouteContainer {
     @Produces("text/html")
     public Response<String> index() {
         return SimpleResponse.of(200, index.render(ImmutableMap.of()));
+    }
+
+    @Path("/mp3ify")
+    @JsonBodyCodec
+    public Response<Object> mp3ifyList(Request<?> request) {
+        long from;
+        try {
+            from = Long.parseLong(request.getQueryParts().getSingleValueOrDefault("from", ""));
+            if (from < 0) {
+                throw new IllegalArgumentException("from.too.small");
+            }
+        } catch (NumberFormatException e) {
+            from = Long.MIN_VALUE;
+        }
+        long to;
+        try {
+            to = Long.parseLong(request.getQueryParts().getSingleValueOrDefault("to", ""));
+            if (to < from) {
+                throw new IllegalArgumentException("to.too.small");
+            }
+        } catch (NumberFormatException e) {
+            to = Long.MAX_VALUE;
+        }
+
+        long f = from;
+        long t = to;
+        return SimpleResponse.of(200, ConversionManager.conversions()
+                .filter(c -> c.getStatus() == Status.SUCCESSFUL)
+                .filter(c -> {
+                    long millis = c.getEndTime().toMillis();
+                    return millis >= f && millis < t;
+                })
+                .sorted(Comparator.comparing(Conversion::getEndTime))
+                .map(c -> ImmutableMap.of(
+                        "id", c.getId(),
+                        "name", c.getFileName()))
+                .collect(toImmutableList()));
     }
 
     @Method(HttpMethod.POST)
@@ -235,6 +275,9 @@ public class RouteContainer {
     @ServerErrorHandler
     @JsonBodyCodec
     public Response<Object> error(Throwable t) {
+        if (t instanceof IllegalArgumentException) {
+            return SimpleResponse.of(HttpResponseStatus.BAD_REQUEST.code(), ImmutableMap.of("error", "bad.request", "message", t.getMessage()));
+        }
         LOGGER.error("Error processing request", t);
         return SimpleResponse.of(500, ImmutableMap.of("error", "server.error"));
     }

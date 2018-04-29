@@ -53,4 +53,14 @@
             </div>
         </div>
     </div>
+    <div class="row mt-1">
+        <div class="col">
+            <div class="card">
+                <div class="card-block">
+                    <ul class="list" id="conversion-history">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 #end

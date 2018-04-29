@@ -29,27 +29,26 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.WeakHashMap;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.HTreeMap;
-import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+import com.techshroom.ytmp3.util.DiskMap;
 
 public class ConversionManager {
 
@@ -70,45 +69,20 @@ public class ConversionManager {
         }
     }
 
-    private static final DB CONVERSION_DB_DISK = DBMaker
-            .fileDB("dbs/conversion.db")
-            .closeOnJvmShutdown()
-            .fileMmapEnableIfSupported()
-            .fileLockDisable()
-            .make();
-    private static final DB CONVERSION_DB_MEM = DBMaker
-            .heapDB()
-            .closeOnJvmShutdown()
-            .make();
-    private static final Serializer<Conversion> CONVERSION_SERIALIZER = JsonSerializer.instance(Conversion.class);
-    private static final HTreeMap<String, Conversion> CONVERSION_MAP_DISK =
-            CONVERSION_DB_DISK.hashMap("conversion")
-                    .keySerializer(Serializer.STRING)
-                    .valueSerializer(CONVERSION_SERIALIZER)
-                    .createOrOpen();
-    private static final ObservableMap<String, Conversion> WEAK_CONVERSION_MAP;
-
+    private static final DiskMap<String, Conversion> CONVERSION_MAP;
+    private static final DiskMap<String, Conversion> RESUBMIT_MAP;
     static {
-        ObservableMap<String, Conversion> map = FXCollections.observableMap(new WeakHashMap<>());
-        map.addListener((MapChangeListener<String, Conversion>) change -> {
-            if (change.wasAdded()) {
-                CONVERSION_MAP_DISK.put(change.getKey(), change.getValueAdded());
-            } else if (change.wasRemoved()) {
-                CONVERSION_MAP_DISK.remove(change.getKey());
-            }
-            CONVERSION_DB_DISK.commit();
-        });
-        WEAK_CONVERSION_MAP = map;
+        // allow reflection to fields
+        ObjectMapper JSON = new ObjectMapper();
+        JSON.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        JSON.registerModule(new Jdk8Module());
+
+        JavaType MAP_KIND = JSON.getTypeFactory().constructMapType(HashMap.class, String.class, Conversion.class);
+
+        CONVERSION_MAP = new DiskMap<>(JSON, MAP_KIND, new HashMap<>(), Paths.get("dbs/conversion-map.db"));
+        RESUBMIT_MAP = new DiskMap<>(JSON, MAP_KIND, new HashMap<>(), Paths.get("dbs/resubmit-map.db"));
     }
 
-    private static final HTreeMap<String, Conversion> CONVERSION_MAP =
-            CONVERSION_DB_MEM.hashMap("conversion")
-                    .keySerializer(Serializer.STRING)
-                    .valueSerializer(CONVERSION_SERIALIZER)
-                    .expireOverflow(WEAK_CONVERSION_MAP)
-                    .expireAfterGet(1, TimeUnit.SECONDS)
-                    .expireExecutor(Executors.newScheduledThreadPool(2))
-                    .createOrOpen();
     private static final Lock CONVERSION_START_LOCK = new ReentrantLock();
 
     public static Conversion newConversion(String video) {
@@ -119,7 +93,7 @@ public class ConversionManager {
             CONVERSION_START_LOCK.lock();
 
             // ensure that the conversion isn't already happening
-            Conversion activeConversion = CONVERSION_MAP.get(conversion.getStoreName());
+            Conversion activeConversion = RESUBMIT_MAP.get(conversion.getStoreName());
             if (activeConversion != null) {
                 // use get to force load from disk
                 if (CONVERSION_MAP.get(activeConversion.getId()) != null) {
@@ -133,8 +107,8 @@ public class ConversionManager {
                     }
                 } catch (IOException ignored) {
                 }
-                LOGGER.warn("CMAP had a conversion for " + conversion.getStoreName() + " with ID " + activeConversion.getId()
-                        + " but the ID didn't exist in CMAP!");
+                LOGGER.warn("Tried to use cached conversion for " + conversion.getStoreName() + " with ID " + activeConversion.getId()
+                        + " but the ID didn't exist in conversion map!");
             }
 
             CONVERSION_POOL.submit(conversion);
@@ -154,12 +128,11 @@ public class ConversionManager {
     public static void refresh(Conversion conversion) {
         CONVERSION_MAP.put(conversion.getId(), conversion);
         // we can also store the video ID tag for checking re-submission
-        CONVERSION_MAP.put(conversion.getStoreName(), conversion);
+        RESUBMIT_MAP.put(conversion.getStoreName(), conversion);
+    }
 
-        // Commit memory
-        CONVERSION_DB_MEM.commit();
-        // Save to disk
-        CONVERSION_DB_DISK.commit();
+    public static Stream<Conversion> conversions() {
+        return CONVERSION_MAP.snapshot().values().stream();
     }
 
 }

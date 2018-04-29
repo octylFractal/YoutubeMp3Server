@@ -4,6 +4,7 @@ let $errorDisplay;
 let $progressBox;
 let $rotateArrow;
 let $progressBar;
+let $history;
 
 let activeSse;
 
@@ -14,6 +15,7 @@ function initializeTargets() {
     $errorDisplay = $("#error-display");
     $rotateArrow = $(".before-arrow, .after-arrow");
     $progressBar = $("#progress-bar");
+    $history = $("#conversion-history");
 }
 
 function emptyData() {
@@ -121,8 +123,15 @@ function rotateArrow(side = undefined) {
     arrowPromise.then(() => arrowPromise = undefined);
 }
 
+function getHistory() {
+	$.get('/mp3ify').then(convs => {
+		$history['html'](convs.map(c => `<li><a href="/mp3ify/${c.id}/download">Download ${c.name}!</a></li>`).join('\n'));
+	});
+}
+
 $(() => {
     initializeTargets();
+    getHistory();
     const $videoForm = $("#video-form");
     $videoForm.submit(e => {
         e.preventDefault();

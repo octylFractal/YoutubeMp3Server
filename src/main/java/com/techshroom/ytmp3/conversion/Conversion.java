@@ -35,6 +35,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -189,6 +191,24 @@ public class Conversion implements Runnable {
     @Nullable
     public String getFileName() {
         return fileName;
+    }
+
+    private transient FileTime cachedFileTime;
+
+    @JsonIgnore
+    public synchronized FileTime getEndTime() {
+        if (cachedFileTime != null) {
+            return cachedFileTime;
+        }
+        Path resultFile = getResultFile();
+        if (resultFile == null) {
+            return FileTime.fromMillis(0L);
+        }
+        try {
+            return cachedFileTime = Files.readAttributes(resultFile, BasicFileAttributes.class).creationTime();
+        } catch (IOException e) {
+            return FileTime.fromMillis(0L);
+        }
     }
 
     @JsonIgnore
