@@ -205,7 +205,7 @@ public class Conversion implements Runnable {
             return FileTime.fromMillis(0L);
         }
         try {
-            return cachedFileTime = Files.readAttributes(resultFile, BasicFileAttributes.class).creationTime();
+            return cachedFileTime = Files.readAttributes(resultFile, BasicFileAttributes.class).lastModifiedTime();
         } catch (IOException e) {
             return FileTime.fromMillis(0L);
         }
@@ -312,6 +312,7 @@ public class Conversion implements Runnable {
             }
             return new ProcessBuilder(YOUTUBE_DL,
                     "--prefer-ffmpeg",
+                    "--no-mtime",
                     "--extract-audio",
                     "--audio-format", "mp3",
                     "--add-metadata",

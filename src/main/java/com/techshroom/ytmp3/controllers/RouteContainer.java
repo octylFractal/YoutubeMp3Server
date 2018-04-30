@@ -113,7 +113,7 @@ public class RouteContainer {
                     long millis = c.getEndTime().toMillis();
                     return millis >= f && millis < t;
                 })
-                .sorted(Comparator.comparing(Conversion::getEndTime))
+                .sorted(Comparator.comparing(Conversion::getEndTime).reversed())
                 .map(c -> ImmutableMap.of(
                         "id", c.getId(),
                         "name", c.getFileName()))

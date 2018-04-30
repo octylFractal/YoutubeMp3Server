@@ -31,11 +31,14 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 
 public class DiskMap<K, V> {
@@ -44,17 +47,30 @@ public class DiskMap<K, V> {
     private final JavaType mapKind;
     private final Map<K, V> map;
     private final Path file;
+    // lock for MEMORY, not disk -- note that the disk ops use the "wrong" lock
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public DiskMap(ObjectMapper mapper, JavaType mapKind, Map<K, V> map, Path file) {
         this.mapper = mapper;
         this.mapKind = mapKind;
         this.map = map;
         this.file = file;
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         read();
         write();
     }
 
-    public synchronized void write() {
+    public void write() {
+        lock.readLock().lock();
+        try {
+            doWrite();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    // must hold lock
+    private void doWrite() {
         try (Writer writer = Files.newBufferedWriter(file)) {
             mapper.writeValue(writer, map);
         } catch (IOException e) {
@@ -62,7 +78,8 @@ public class DiskMap<K, V> {
         }
     }
 
-    public synchronized void read() {
+    public void read() {
+        lock.writeLock().lock();
         try {
             if (!Files.exists(file)) {
                 return;
@@ -73,34 +90,57 @@ public class DiskMap<K, V> {
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
-    public synchronized V get(K key) {
-        return map.get(key);
-    }
-
-    public synchronized V put(K key, V val) {
-        V v = map.put(key, val);
-        if (v != val) {
-            write();
-        }
-        return v;
-    }
-
-    public synchronized void useMap(Consumer<Map<K, V>> cons) {
-        cons.accept(map);
-        write();
-    }
-
-    public synchronized void useMap(Predicate<Map<K, V>> cons) {
-        if (cons.test(map)) {
-            write();
+    public V get(K key) {
+        lock.readLock().lock();
+        try {
+            return map.get(key);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
-    public synchronized Map<K, V> snapshot() {
-        return ImmutableMap.copyOf(map);
+    public V put(K key, V val) {
+        lock.writeLock().lock();
+        try {
+            return map.put(key, val);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void useMap(Consumer<Map<K, V>> cons) {
+        lock.writeLock().lock();
+        try {
+            cons.accept(map);
+            doWrite();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void useMap(Predicate<Map<K, V>> cons) {
+        lock.writeLock().lock();
+        try {
+            if (cons.test(map)) {
+                doWrite();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public Map<K, V> snapshot() {
+        lock.readLock().lock();
+        try {
+            return ImmutableMap.copyOf(map);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
 }
