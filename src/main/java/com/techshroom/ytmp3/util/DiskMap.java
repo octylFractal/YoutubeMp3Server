@@ -107,7 +107,9 @@ public class DiskMap<K, V> {
     public V put(K key, V val) {
         lock.writeLock().lock();
         try {
-            return map.put(key, val);
+            V put = map.put(key, val);
+            doWrite();
+            return put;
         } finally {
             lock.writeLock().unlock();
         }
