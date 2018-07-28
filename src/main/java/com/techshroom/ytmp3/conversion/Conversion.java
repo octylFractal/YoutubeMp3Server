@@ -134,8 +134,8 @@ public class Conversion implements Runnable {
 
     @JsonCreator
     public Conversion(@JsonProperty("id") String id, @JsonProperty("video") String video) {
-        this.id = id;
-        this.video = video;
+        this.id = checkNotNull(id, "id");
+        this.video = checkNotNull(video, "video");
 
         try {
             workingDir = WORKING_DIR.resolve(id);
