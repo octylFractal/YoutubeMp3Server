@@ -139,8 +139,7 @@ public class Conversion implements Runnable {
 
         try {
             workingDir = WORKING_DIR.resolve(id);
-            videoId = VideoIdFinder.findId(video)
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown video type " + video));
+            videoId = VideoIdFinder.findId(video).orElse(new VideoId("unknown", video));
             storeName = videoId.getProvider() + "-" + videoId.getId();
         } catch (Exception e) {
             // setup failure if it occurs early
