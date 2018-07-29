@@ -24,35 +24,40 @@
  */
 package com.techshroom.ytmp3.util;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 
-public class DiskMap<K, V> {
+public class DiskMap<V> {
 
     private final ObjectMapper mapper;
-    private final JavaType mapKind;
-    private final Map<K, V> map;
+    private final JavaType valueType;
+    private final Map<String, V> map;
     private final Path file;
     // lock for MEMORY, not disk -- note that the disk ops use the "wrong" lock
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public DiskMap(ObjectMapper mapper, JavaType mapKind, Map<K, V> map, Path file) {
+    public DiskMap(ObjectMapper mapper, JavaType valueType, Map<String, V> map, Path file) {
         this.mapper = mapper;
-        this.mapKind = mapKind;
+        this.valueType = valueType;
         this.map = map;
         this.file = file;
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -86,7 +91,7 @@ public class DiskMap<K, V> {
             }
             try (Reader reader = Files.newBufferedReader(file)) {
                 map.clear();
-                map.putAll(mapper.readValue(reader, mapKind));
+                readValues(mapper.readTree(reader));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -95,7 +100,26 @@ public class DiskMap<K, V> {
         }
     }
 
-    public V get(K key) {
+    private void readValues(JsonNode tree) {
+        if (!tree.isObject()) {
+            return;
+        }
+        for (Iterator<Entry<String, JsonNode>> fields = tree.fields(); fields.hasNext();) {
+            Entry<String, JsonNode> field = fields.next();
+            if (field.getKey() == null) {
+                continue;
+            }
+            V value;
+            try {
+                value = mapper.readValue(mapper.treeAsTokens(field.getValue()), valueType);
+            } catch (IOException ex) {
+                value = null;
+            }
+            map.put(field.getKey(), value);
+        }
+    }
+
+    public V get(String key) {
         lock.readLock().lock();
         try {
             return map.get(key);
@@ -104,7 +128,8 @@ public class DiskMap<K, V> {
         }
     }
 
-    public V put(K key, V val) {
+    public V put(String key, V val) {
+        checkNotNull(key, "key");
         lock.writeLock().lock();
         try {
             V put = map.put(key, val);
@@ -115,7 +140,7 @@ public class DiskMap<K, V> {
         }
     }
 
-    public void useMap(Consumer<Map<K, V>> cons) {
+    public void useMap(Consumer<Map<String, V>> cons) {
         lock.writeLock().lock();
         try {
             cons.accept(map);
@@ -125,7 +150,7 @@ public class DiskMap<K, V> {
         }
     }
 
-    public void useMap(Predicate<Map<K, V>> cons) {
+    public void useMap(Predicate<Map<String, V>> cons) {
         lock.writeLock().lock();
         try {
             if (cons.test(map)) {
@@ -136,7 +161,7 @@ public class DiskMap<K, V> {
         }
     }
 
-    public Map<K, V> snapshot() {
+    public Map<String, V> snapshot() {
         lock.readLock().lock();
         try {
             return ImmutableMap.copyOf(map);

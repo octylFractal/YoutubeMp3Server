@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 public final class CommonUtilities {
 
-    private static final Splitter.MapSplitter QUERY_SPLITTER = Splitter.on('&').withKeyValueSeparator('=');
+    private static final Splitter.MapSplitter QUERY_SPLITTER = Splitter.on('&').withKeyValueSeparator(Splitter.on('=').limit(2));
     private static final Splitter PATH_SPLITTER = Splitter.on('/').omitEmptyStrings();
 
     private static final Pattern PROTOCOL_REGEX = Pattern.compile("[a-zA-Z]+://");

@@ -68,18 +68,18 @@ public class ConversionManager {
         }
     }
 
-    private static final DiskMap<String, Conversion> CONVERSION_MAP;
-    private static final DiskMap<String, Conversion> RESUBMIT_MAP;
+    private static final DiskMap<Conversion> CONVERSION_MAP;
+    private static final DiskMap<Conversion> RESUBMIT_MAP;
     static {
         // allow reflection to fields
         ObjectMapper JSON = new ObjectMapper();
         JSON.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         JSON.registerModule(new Jdk8Module());
 
-        JavaType MAP_KIND = JSON.getTypeFactory().constructMapType(HashMap.class, String.class, Conversion.class);
+        JavaType VALUE_TYPE = JSON.constructType(Conversion.class);
 
-        CONVERSION_MAP = new DiskMap<>(JSON, MAP_KIND, new HashMap<>(), Paths.get("dbs/conversion-map.db"));
-        RESUBMIT_MAP = new DiskMap<>(JSON, MAP_KIND, new HashMap<>(), Paths.get("dbs/resubmit-map.db"));
+        CONVERSION_MAP = new DiskMap<>(JSON, VALUE_TYPE, new HashMap<>(), Paths.get("dbs/conversion-map.db"));
+        RESUBMIT_MAP = new DiskMap<>(JSON, VALUE_TYPE, new HashMap<>(), Paths.get("dbs/resubmit-map.db"));
     }
 
     private static final Lock CONVERSION_START_LOCK = new ReentrantLock();
@@ -125,9 +125,13 @@ public class ConversionManager {
     }
 
     public static void refresh(Conversion conversion) {
-        CONVERSION_MAP.put(conversion.getId(), conversion);
+        if (conversion.getId() != null) {
+            CONVERSION_MAP.put(conversion.getId(), conversion);
+        }
         // we can also store the video ID tag for checking re-submission
-        RESUBMIT_MAP.put(conversion.getStoreName(), conversion);
+        if (conversion.getStoreName() != null) {
+            RESUBMIT_MAP.put(conversion.getStoreName(), conversion);
+        }
     }
 
     public static Stream<Conversion> conversions() {

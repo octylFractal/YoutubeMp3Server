@@ -12,6 +12,7 @@ inciseBlue {
 	plugins {
 		apt
 		util
+		license
 	}
 	util {
 	    javaVersion = '1.8'
