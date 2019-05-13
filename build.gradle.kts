@@ -46,6 +46,8 @@ dependencies {
         implementation(group = "org.openjfx", name = "javafx-base", version = "11.0.2", classifier = it)
     }
 
+    implementation(group = "com.techshroom", name = "greenish-jungle", version = "0.0.3")
+
     compileOnly(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc4")
     annotationProcessor(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc4")
     compileOnly(group = "com.google.auto.value", name = "auto-value-annotations", version = "1.6.5")
@@ -55,6 +57,11 @@ dependencies {
 }
 
 application.mainClassName = "com.techshroom.ytmp3.YoutubeMp3Server"
+
+tasks.run.configure {
+    environment("YTMP3_HOST", "localhost")
+    environment("YTMP3_PORT", "9000")
+}
 
 // Super exciting! We"re doing ES6 transpilation!
 val destDirBase = project.file("$buildDir/transpiled")

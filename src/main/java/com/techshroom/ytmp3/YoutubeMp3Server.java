@@ -26,6 +26,9 @@
 package com.techshroom.ytmp3;
 
 import com.google.common.collect.ImmutableList;
+import com.techshroom.jungle.Loaders;
+import com.techshroom.jungle.PropOrEnvConfigOption;
+import com.techshroom.jungle.PropOrEnvNamespace;
 import com.techshroom.lettar.Router;
 import com.techshroom.lettar.pipe.PipelineRouterInitializer;
 import com.techshroom.templar.HttpInitializer;
@@ -36,12 +39,18 @@ import io.netty.buffer.ByteBuf;
 
 public class YoutubeMp3Server {
 
+    private static final PropOrEnvNamespace CONFIG = PropOrEnvNamespace.create("ytmp3");
+    private static final PropOrEnvConfigOption<String> HOST =
+        CONFIG.create("host", Loaders.forString(), "0.0.0.0");
+    private static final PropOrEnvConfigOption<Integer> PORT =
+        CONFIG.create("port", Loaders.forIntInRange(0, 65565), 80);
+
     public static void main(String[] args) {
         Router<ByteBuf, Object> router = new PipelineRouterInitializer()
             .newRouter(ImmutableList.of(new RouteContainer()));
 
         HttpServerBootstrap bootstrap = new HttpServerBootstrap(
-            "0.0.0.0", 80, () -> new HttpInitializer(new HttpRouterHandler(router))
+            HOST.get(), PORT.get(), () -> new HttpInitializer(new HttpRouterHandler(router))
         );
         bootstrap.start();
     }

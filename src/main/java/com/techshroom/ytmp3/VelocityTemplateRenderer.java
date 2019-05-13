@@ -25,15 +25,18 @@
 
 package com.techshroom.ytmp3;
 
+import com.google.common.io.Resources;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.event.EventCartridge;
 import org.apache.velocity.app.event.implement.IncludeRelativePath;
 import org.apache.velocity.context.Context;
 import org.apache.velocity.runtime.RuntimeInstance;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,11 +47,14 @@ public class VelocityTemplateRenderer implements TemplateRenderer {
     private static final RuntimeInstance VELOCITY = new RuntimeInstance();
 
     static {
-        Properties props = new Properties();
-        props.setProperty("resource.loader", "classpath");
-        props.setProperty("classpath.resource.loader.description", "Classpath Loader");
-        props.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
-        VELOCITY.init(props);
+        Properties p = new Properties();
+        URL propSource = Resources.getResource("com/techshroom/ytmp3/templates/velocity.properties");
+        try (Reader in = Resources.asCharSource(propSource, StandardCharsets.UTF_8).openBufferedStream()) {
+            p.load(in);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        VELOCITY.init(p);
     }
 
     public static VelocityTemplateRenderer load(String location) {
@@ -65,7 +71,7 @@ public class VelocityTemplateRenderer implements TemplateRenderer {
 
     private final Template template;
 
-    public VelocityTemplateRenderer(Template template) {
+    private VelocityTemplateRenderer(Template template) {
         this.template = template;
     }
 
