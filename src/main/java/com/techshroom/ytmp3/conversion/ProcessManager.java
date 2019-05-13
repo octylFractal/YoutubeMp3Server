@@ -22,10 +22,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteStreams;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -40,12 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nullable;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class ProcessManager {
 
@@ -53,7 +53,7 @@ public class ProcessManager {
     private static final Map<String, Process> RUNNING_PROCESSES = new ConcurrentHashMap<>();
 
     private static final ExecutorService outputTransferrer = Executors.newCachedThreadPool(
-            new ThreadFactoryBuilder().setNameFormat("process-output-pipe-%d").setDaemon(true).build());
+        new ThreadFactoryBuilder().setNameFormat("process-output-pipe-%d").setDaemon(true).build());
 
     static {
         new ProcessMapReaper().start();
@@ -72,17 +72,16 @@ public class ProcessManager {
         b.addAll(PATH_SPLITTER.split(pathExtEnv));
         PATHEXT = b.build();
         PATH = StreamSupport.stream(PATH_SPLITTER.split(System.getenv("PATH")).spliterator(), false)
-                .map(Paths::get)
-                .filter(Files::exists)
-                .collect(toImmutableList());
+            .map(Paths::get)
+            .filter(Files::exists)
+            .collect(toImmutableList());
     }
 
     /**
      * Finds {@code program} by searching the PATH. It also adds suffixes from
      * PATHEXT.
      *
-     * @param program
-     *            the program to find on the PATH
+     * @param program the program to find on the PATH
      * @return the program, if found
      */
     public static Optional<Path> resolveProgram(String program) {

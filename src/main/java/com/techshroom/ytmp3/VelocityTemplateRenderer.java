@@ -22,13 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.techshroom.ytmp3;
 
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+package com.techshroom.ytmp3;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -38,9 +33,16 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.runtime.RuntimeInstance;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 public class VelocityTemplateRenderer implements TemplateRenderer {
 
     private static final RuntimeInstance VELOCITY = new RuntimeInstance();
+
     static {
         Properties props = new Properties();
         props.setProperty("resource.loader", "classpath");
@@ -54,6 +56,7 @@ public class VelocityTemplateRenderer implements TemplateRenderer {
     }
 
     private static final Context EVENT_CONTEXT = new VelocityContext();
+
     static {
         EventCartridge events = new EventCartridge();
         events.addIncludeEventHandler(new IncludeRelativePath());

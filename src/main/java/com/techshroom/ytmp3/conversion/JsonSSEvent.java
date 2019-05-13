@@ -22,12 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion;
 
 import com.techshroom.lettar.addons.sse.ServerSentEvent;
 
 public class JsonSSEvent {
-    
+
     public static JsonSSEvent from(ServerSentEvent lettarEvent) {
         JsonSSEvent event = new JsonSSEvent();
         lettarEvent.getName().ifPresent(event::setName);
@@ -63,7 +64,7 @@ public class JsonSSEvent {
     public void setData(String data) {
         this.data = data;
     }
-    
+
     public ServerSentEvent toLettarEvent() {
         return ServerSentEvent.of(name, id, data);
     }

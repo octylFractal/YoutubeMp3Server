@@ -22,13 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion.videoid;
+
+import com.google.auto.service.AutoService;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import com.google.auto.service.AutoService;
 
 @AutoService(VideoHandler.class)
 public class YoutubeVideoHandler implements VideoHandler {

@@ -51,7 +51,7 @@ function setupSse(id) {
         } else if (status === Status.SUCCESSFUL) {
             $statusText.text("Conversion complete!");
             onSuccess(id);
-        } else if (status == Status.CONVERTING) {
+        } else if (status === Status.CONVERTING) {
             $statusText.text("Converting...");
         }
     });
@@ -61,14 +61,13 @@ function setupSse(id) {
             $progressBox.text((i, oldText) => {
                 // from 1 before end, as end is a newline as well
                 const lastNewline = oldText.lastIndexOf('\n', oldText.length - 2);
-                const newText = oldText.substring(0, lastNewline + 1);
-                return newText;
+                return oldText.substring(0, lastNewline + 1);
             });
             doCr = false;
         }
         $progressBox.append(e.data + '\n');
     });
-    source.addEventListener("carrigeReturn", e => {
+    source.addEventListener("carriageReturn", () => {
         doCr = true;
     });
     activeSse = source;
@@ -124,9 +123,9 @@ function rotateArrow(side = undefined) {
 }
 
 function getHistory() {
-	$.get('/mp3ify').then(convs => {
-		$history['html'](convs.map(c => `<li><a href="/mp3ify/${c.id}/download">Download ${c.name}!</a></li>`).join('\n'));
-	});
+    $.get('/mp3ify').then(convs => {
+        $history['html'](convs.map(c => `<li><a href="/mp3ify/${c.id}/download">Download ${c.name}!</a></li>`).join('\n'));
+    });
 }
 
 $(() => {
@@ -140,11 +139,17 @@ $(() => {
 
         const video = $("#video").val();
 
+        if (video.trim().length === 0) {
+            return;
+        }
+
         emptyData();
         setProgressBar("info", 50);
         $['post']({
             url: '/mp3ify',
-            data: JSON.stringify({'video': video})
+            data: JSON.stringify({'video': video}),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
         })['done'](id => {
             console.log(`Converting ${video}, job ID = ${id}`);
             $statusText.text(`Converting...`);

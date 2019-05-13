@@ -22,30 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.controllers;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableList.toImmutableList;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -66,9 +44,30 @@ import com.techshroom.ytmp3.VelocityTemplateRenderer;
 import com.techshroom.ytmp3.conversion.Conversion;
 import com.techshroom.ytmp3.conversion.ConversionManager;
 import com.techshroom.ytmp3.conversion.Status;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import javafx.collections.ObservableList;
+import org.apache.tika.detect.DefaultDetector;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class RouteContainer {
 
@@ -108,22 +107,25 @@ public class RouteContainer {
         long f = from;
         long t = to;
         return SimpleResponse.of(200, ConversionManager.conversions()
-                .filter(c -> c.getStatus() == Status.SUCCESSFUL)
-                .filter(c -> {
-                    long millis = c.getEndTime().toMillis();
-                    return millis >= f && millis < t;
-                })
-                .sorted(Comparator.comparing(Conversion::getEndTime).reversed())
-                .map(c -> ImmutableMap.of(
-                        "id", c.getId(),
-                        "name", c.getFileName()))
-                .collect(toImmutableList()));
+            .filter(c -> c.getStatus() == Status.SUCCESSFUL)
+            .filter(c -> {
+                long millis = c.getEndTime().toMillis();
+                return millis >= f && millis < t;
+            })
+            .sorted(Comparator.comparing(Conversion::getEndTime).reversed())
+            .map(c -> ImmutableMap.of(
+                "id", c.getId(),
+                "name", c.getFileName()))
+            .collect(toImmutableList()));
     }
 
     @Method(HttpMethod.POST)
     @Path("/mp3ify")
     @JsonBodyCodec
     public Response<Object> mp3ify(Request<Mp3ifyBody> request) {
+        if (request.getBody() == null) {
+            return SimpleResponse.of(400, "body.not.provided");
+        }
         String video = request.getBody().getVideo();
         if (Strings.isNullOrEmpty(video)) {
             return SimpleResponse.of(400, "video.not.provided");
@@ -140,7 +142,7 @@ public class RouteContainer {
             if (status == Status.FAILED) {
                 data.put("reason", checkNotNull(conversion.getFailureReason()));
             }
-            return SimpleResponse.<Object> of(200, data.build());
+            return SimpleResponse.<Object>of(200, data.build());
         }).orElseGet(() -> SimpleResponse.of(404, id));
     }
 
@@ -148,30 +150,30 @@ public class RouteContainer {
     @JsonBodyCodec
     public Response<Object> mp3ifyRawOutput(String id) {
         return conversion(id)
-                .map(Conversion::getRawOutput)
-                .map(b -> SimpleResponse.<Object> of(200, b))
-                .orElseGet(() -> SimpleResponse.of(404, id));
+            .map(Conversion::getRawOutput)
+            .map(b -> SimpleResponse.<Object>of(200, b))
+            .orElseGet(() -> SimpleResponse.of(404, id));
     }
 
     @Path("/mp3ify/{*}/fileName")
     @JsonBodyCodec
     public Response<Object> mp3ifyFileName(String id) {
         return conversion(id)
-                .map(Conversion::getFileName)
-                .map(b -> SimpleResponse.<Object> of(200, b))
-                .orElseGet(() -> SimpleResponse.of(404, id));
+            .map(Conversion::getFileName)
+            .map(b -> SimpleResponse.<Object>of(200, b))
+            .orElseGet(() -> SimpleResponse.of(404, id));
     }
 
     @Path("/mp3ify/{*}/stream")
     @Produces("text/event-stream")
     public CompletionStage<Response<Object>> mp3ifyStream(Request<Object> request, String id) {
         return conversion(id)
-                .map(Conversion::getObservableEvents)
-                .map(events -> makeStream(request, events))
-                .orElseGet(() -> {
-                    CompletionStage<Response<Object>> respStage = CompletableFuture.completedFuture(SimpleResponse.of(404, id));
-                    return respStage;
-                });
+            .map(Conversion::getObservableEvents)
+            .map(events -> makeStream(request, events))
+            .orElseGet(() -> {
+                CompletionStage<Response<Object>> respStage = CompletableFuture.completedFuture(SimpleResponse.of(404, id));
+                return respStage;
+            });
     }
 
     private CompletionStage<Response<Object>> makeStream(Request<Object> request, ObservableList<ServerSentEvent> events) {
@@ -204,23 +206,23 @@ public class RouteContainer {
                 break;
             case FAILED:
                 return SimpleResponse.of(409, ImmutableMap.of(
-                        "error", "conversion.failed"));
+                    "error", "conversion.failed"));
             default:
                 return SimpleResponse.of(409, ImmutableMap.of(
-                        "error", "conversion.not.finished",
-                        "status", conversion.getStatus().toString()));
+                    "error", "conversion.not.finished",
+                    "status", conversion.getStatus().toString()));
         }
         InputStream stream = Files.newInputStream(conversion.getResultFile());
         stream = new BufferedInputStream(stream, 8192);
         return SimpleResponse.builder()
-                .ok_200()
-                .body(stream)
-                .headers(ImmutableMap.of(
-                        "content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\"",
-                        "content-length", String.valueOf(Files.size(conversion.getResultFile())),
-                        // ensure netty gzip is not applied
-                        "content-encoding", "identity"))
-                .build();
+            .ok_200()
+            .body(stream)
+            .headers(ImmutableMap.of(
+                "content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\"",
+                "content-length", String.valueOf(Files.size(conversion.getResultFile())),
+                // ensure netty gzip is not applied
+                "content-encoding", "identity"))
+            .build();
     }
 
     @Path("/assets/{**}")
@@ -235,12 +237,12 @@ public class RouteContainer {
         File fileResource = assets.getAsset(resource).toFile();
 
         return SimpleResponse.builder()
-                .headers(ImmutableMap.of(
-                        "content-type", getContentType(fileResource),
-                        "content-length", String.valueOf(fileResource.length())))
-                .ok_200()
-                .body(new BufferedInputStream(new FileInputStream(fileResource)))
-                .build();
+            .headers(ImmutableMap.of(
+                "content-type", getContentType(fileResource),
+                "content-length", String.valueOf(fileResource.length())))
+            .ok_200()
+            .body(new BufferedInputStream(new FileInputStream(fileResource)))
+            .build();
     }
 
     private final Detector detector = new DefaultDetector();

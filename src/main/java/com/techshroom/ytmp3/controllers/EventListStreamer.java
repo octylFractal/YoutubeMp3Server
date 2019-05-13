@@ -22,7 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.controllers;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.techshroom.lettar.Response;
+import com.techshroom.lettar.SimpleResponse;
+import com.techshroom.lettar.addons.sse.BaseSseEmitter;
+import com.techshroom.lettar.addons.sse.ServerSentEvent;
+import com.techshroom.lettar.addons.sse.SseEmitter;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,16 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.techshroom.lettar.Response;
-import com.techshroom.lettar.SimpleResponse;
-import com.techshroom.lettar.addons.sse.BaseSseEmitter;
-import com.techshroom.lettar.addons.sse.ServerSentEvent;
-import com.techshroom.lettar.addons.sse.SseEmitter;
-
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-
 public class EventListStreamer {
 
     public static CompletionStage<? extends Response<? extends Object>> subscribe(ObservableList<ServerSentEvent> events, int skip) {
@@ -52,7 +52,7 @@ public class EventListStreamer {
     }
 
     private static final ScheduledExecutorService KEEP_ALIVE = Executors.newScheduledThreadPool(2,
-            new ThreadFactoryBuilder().setNameFormat("keep-alive-%d").setDaemon(true).build());
+        new ThreadFactoryBuilder().setNameFormat("keep-alive-%d").setDaemon(true).build());
     private static final ServerSentEvent KEEP_ALIVE_EVENT = ServerSentEvent.builder().comment("keep-alive").build();
 
     private final SseEmitter emitter = new BaseSseEmitter(SimpleResponse::builder);
@@ -82,8 +82,8 @@ public class EventListStreamer {
                 }
             });
             events.stream()
-                    .skip(skip)
-                    .forEach(this::sendEvent);
+                .skip(skip)
+                .forEach(this::sendEvent);
         } finally {
             lock.unlock();
         }

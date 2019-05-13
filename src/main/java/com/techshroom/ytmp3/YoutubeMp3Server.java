@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3;
 
 import com.google.common.collect.ImmutableList;
@@ -31,16 +32,17 @@ import com.techshroom.templar.HttpInitializer;
 import com.techshroom.templar.HttpRouterHandler;
 import com.techshroom.templar.HttpServerBootstrap;
 import com.techshroom.ytmp3.controllers.RouteContainer;
-
 import io.netty.buffer.ByteBuf;
 
 public class YoutubeMp3Server {
 
     public static void main(String[] args) {
         Router<ByteBuf, Object> router = new PipelineRouterInitializer()
-                .newRouter(ImmutableList.of(new RouteContainer()));
+            .newRouter(ImmutableList.of(new RouteContainer()));
 
-        HttpServerBootstrap bootstrap = new HttpServerBootstrap("0.0.0.0", 9000, () -> new HttpInitializer(new HttpRouterHandler(router)));
+        HttpServerBootstrap bootstrap = new HttpServerBootstrap(
+            "127.0.0.1", 9000, () -> new HttpInitializer(new HttpRouterHandler(router))
+        );
         bootstrap.start();
     }
 }

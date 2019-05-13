@@ -22,11 +22,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableList.toImmutableList;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.techshroom.lettar.addons.sse.ServerSentEvent;
+import com.techshroom.ytmp3.conversion.videoid.VideoId;
+import com.techshroom.ytmp3.conversion.videoid.VideoIdFinder;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.HTreeMap;
+import org.mapdb.Serializer;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -42,26 +58,8 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.HTreeMap;
-import org.mapdb.Serializer;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.techshroom.lettar.addons.sse.ServerSentEvent;
-import com.techshroom.ytmp3.conversion.videoid.VideoId;
-import com.techshroom.ytmp3.conversion.videoid.VideoIdFinder;
-
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class Conversion implements Runnable {
 
@@ -81,19 +79,19 @@ public class Conversion implements Runnable {
     }
 
     private static final DB VIDEO_ID_RECORDS = DBMaker
-            .fileDB("dbs/id-records.db")
-            .closeOnJvmShutdown()
-            .fileMmapEnableIfSupported()
-            .make();
+        .fileDB("dbs/id-records.db")
+        .closeOnJvmShutdown()
+        .fileMmapEnableIfSupported()
+        .make();
     private static final HTreeMap<String, String> VIDEO_ID_MAP =
-            VIDEO_ID_RECORDS
-                    .hashMap("records")
-                    .keySerializer(Serializer.STRING)
-                    .valueSerializer(Serializer.STRING)
-                    .createOrOpen();
+        VIDEO_ID_RECORDS
+            .hashMap("records")
+            .keySerializer(Serializer.STRING)
+            .valueSerializer(Serializer.STRING)
+            .createOrOpen();
 
     private static final String YOUTUBE_DL = ProcessManager.resolveProgram("youtube-dl")
-            .orElseThrow(() -> new IllegalStateException("Missing youtube-dl!")).toAbsolutePath().toString();
+        .orElseThrow(() -> new IllegalStateException("Missing youtube-dl!")).toAbsolutePath().toString();
 
     // Stores the entire event stream so it can be replayed from any point
     private transient final ObservableList<ServerSentEvent> events = FXCollections.observableList(new CopyOnWriteArrayList<>());
@@ -115,7 +113,7 @@ public class Conversion implements Runnable {
     private transient final VideoId videoId;
     private transient final String storeName;
     private transient final ObjectProperty<Status> statusProperty =
-            new SimpleObjectProperty<>(this, "status", Status.CREATED);
+        new SimpleObjectProperty<>(this, "status", Status.CREATED);
     @Nullable
     private String failureReason;
     @Nullable
@@ -310,16 +308,16 @@ public class Conversion implements Runnable {
                 Files.createDirectories(workingDir);
             }
             return new ProcessBuilder(YOUTUBE_DL,
-                    "--prefer-ffmpeg",
-                    "--no-mtime",
-                    "--extract-audio",
-                    "--audio-format", "mp3",
-                    "--add-metadata",
-                    "--embed-thumbnail",
-                    "--output", "%(title)s.%(ext)s", video)
-                            .directory(workingDir.toFile())
-                            .redirectErrorStream(true)
-                            .start();
+                "--prefer-ffmpeg",
+                "--no-mtime",
+                "--extract-audio",
+                "--audio-format", "mp3",
+                "--add-metadata",
+                "--embed-thumbnail",
+                "--output", "%(title)s.%(ext)s", video)
+                .directory(workingDir.toFile())
+                .redirectErrorStream(true)
+                .start();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -344,7 +342,7 @@ public class Conversion implements Runnable {
                 // new line, new event
                 pushLine();
                 if (b == '\r') {
-                    pushCarrigeReturn();
+                    pushCarriageReturn();
                 }
                 return;
             }
@@ -360,13 +358,13 @@ public class Conversion implements Runnable {
             }
         }
 
-        private void pushCarrigeReturn() {
-            pushEvent("carrigeReturn", "");
+        private void pushCarriageReturn() {
+            pushEvent("carriageReturn", "");
         }
 
         private void pushLine() {
             pushEvent("outputLine", StandardCharsets.UTF_8.decode(ByteBuffer.wrap(
-                    newlineCapture.toByteArray())).toString());
+                newlineCapture.toByteArray())).toString());
             newlineCapture.reset();
         }
     }

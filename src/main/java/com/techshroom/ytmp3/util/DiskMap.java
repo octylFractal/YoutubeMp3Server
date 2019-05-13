@@ -22,9 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.util;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -37,14 +42,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.ImmutableMap;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DiskMap<V> {
 
@@ -104,7 +103,7 @@ public class DiskMap<V> {
         if (!tree.isObject()) {
             return;
         }
-        for (Iterator<Entry<String, JsonNode>> fields = tree.fields(); fields.hasNext();) {
+        for (Iterator<Entry<String, JsonNode>> fields = tree.fields(); fields.hasNext(); ) {
             Entry<String, JsonNode> field = fields.next();
             if (field.getKey() == null) {
                 continue;
@@ -135,27 +134,6 @@ public class DiskMap<V> {
             V put = map.put(key, val);
             doWrite();
             return put;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public void useMap(Consumer<Map<String, V>> cons) {
-        lock.writeLock().lock();
-        try {
-            cons.accept(map);
-            doWrite();
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public void useMap(Predicate<Map<String, V>> cons) {
-        lock.writeLock().lock();
-        try {
-            if (cons.test(map)) {
-                doWrite();
-            }
         } finally {
             lock.writeLock().unlock();
         }

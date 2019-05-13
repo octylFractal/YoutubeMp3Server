@@ -22,18 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion.videoid;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 public class VideoIdFinder {
 
@@ -47,10 +47,10 @@ public class VideoIdFinder {
 
     public static Optional<VideoId> findId(String video) {
         return HANDLERS.stream()
-                .map(h -> h.findId(video))
-                .filter(Optional::isPresent)
-                .findFirst()
-                .flatMap(Function.identity());
+            .map(h -> h.findId(video))
+            .filter(Optional::isPresent)
+            .findFirst()
+            .flatMap(Function.identity());
     }
 
 }

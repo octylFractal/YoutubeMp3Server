@@ -22,5 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 @com.techshroom.jsr305.plus.NonnullByDefault
 package com.techshroom.ytmp3.conversion.videoid;

@@ -22,7 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.controllers;
+
+import com.google.common.collect.Sets;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -36,10 +41,6 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.google.common.collect.Sets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
 
 public class AssetCacher {
 
@@ -55,6 +56,7 @@ public class AssetCacher {
     }
 
     private final Path cacheDirectory;
+
     {
         try {
             this.cacheDirectory = Files.createTempDirectory("youtube-mp3-server");
@@ -62,6 +64,7 @@ public class AssetCacher {
             throw new UncheckedIOException(e);
         }
     }
+
     private final Set<String> cached = Sets.newConcurrentHashSet();
     private final Lock lock = new ReentrantLock();
 
@@ -84,7 +87,7 @@ public class AssetCacher {
     private void cache(String key, URL resource) {
         Path location = cacheDirectory.resolve(key);
         try (InputStream input = resource.openStream();
-                OutputStream output = new BufferedOutputStream(Files.newOutputStream(location))) {
+             OutputStream output = new BufferedOutputStream(Files.newOutputStream(location))) {
             ByteStreams.copy(input, output);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

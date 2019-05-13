@@ -22,8 +22,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.ytmp3.conversion;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.techshroom.ytmp3.util.DiskMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -36,26 +48,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.techshroom.ytmp3.util.DiskMap;
-
 public class ConversionManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConversionManager.class);
 
     private static final UniqueId ID = new UniqueId("video");
     private static final ExecutorService CONVERSION_POOL = Executors.newFixedThreadPool(4,
-            new ThreadFactoryBuilder().setNameFormat("conversion-%d").setDaemon(true).build());
+        new ThreadFactoryBuilder().setNameFormat("conversion-%d").setDaemon(true).build());
 
     static {
         try {
@@ -70,6 +69,7 @@ public class ConversionManager {
 
     private static final DiskMap<Conversion> CONVERSION_MAP;
     private static final DiskMap<Conversion> RESUBMIT_MAP;
+
     static {
         // allow reflection to fields
         ObjectMapper JSON = new ObjectMapper();
@@ -107,7 +107,7 @@ public class ConversionManager {
                 } catch (IOException ignored) {
                 }
                 LOGGER.warn("Tried to use cached conversion for " + conversion.getStoreName() + " with ID " + activeConversion.getId()
-                        + " but the ID didn't exist in conversion map!");
+                    + " but the ID didn't exist in conversion map!");
             }
 
             CONVERSION_POOL.submit(conversion);
