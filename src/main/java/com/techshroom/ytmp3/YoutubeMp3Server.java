@@ -41,7 +41,7 @@ public class YoutubeMp3Server {
             .newRouter(ImmutableList.of(new RouteContainer()));
 
         HttpServerBootstrap bootstrap = new HttpServerBootstrap(
-            "127.0.0.1", 9000, () -> new HttpInitializer(new HttpRouterHandler(router))
+            "0.0.0.0", 80, () -> new HttpInitializer(new HttpRouterHandler(router))
         );
         bootstrap.start();
     }
