@@ -56,6 +56,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -92,6 +93,8 @@ public class Conversion implements Runnable {
 
     private static final String YOUTUBE_DL = ProcessManager.resolveProgram("youtube-dl")
         .orElseThrow(() -> new IllegalStateException("Missing youtube-dl!")).toAbsolutePath().toString();
+
+    private static final Pattern UNSAFE_FILE_NAME = Pattern.compile("[/\\\\?%*:|\"<>]");
 
     // Stores the entire event stream so it can be replayed from any point
     private transient final ObservableList<ServerSentEvent> events = FXCollections.observableList(new CopyOnWriteArrayList<>());
@@ -138,7 +141,8 @@ public class Conversion implements Runnable {
         try {
             workingDir = WORKING_DIR.resolve(id);
             videoId = VideoIdFinder.findId(video).orElse(new VideoId("unknown", video));
-            storeName = videoId.getProvider() + "-" + videoId.getId();
+            storeName = UNSAFE_FILE_NAME.matcher(videoId.getProvider() + "-" + videoId.getId())
+                .replaceAll("_");
         } catch (Exception e) {
             // setup failure if it occurs early
             canFireEvents = true;

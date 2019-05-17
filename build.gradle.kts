@@ -15,6 +15,12 @@ inciseBlue {
     license()
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("io.netty:netty-all:4.1.36.Final")
+    }
+}
+
 val slf4jVersion = "1.7.26"
 val logbackVersion = "1.2.3"
 val jacksonVersion = "2.9.8"
@@ -26,6 +32,7 @@ dependencies {
     implementation(group = "org.mapdb", name = "mapdb", version = "3.0.7")
     implementation(group = "ch.qos.logback", name = "logback-core", version = logbackVersion)
     implementation(group = "ch.qos.logback", name = "logback-classic", version = logbackVersion)
+    implementation(group = "com.techshroom", name = "lettar", version = "0.4.0")
     implementation(group = "com.techshroom.templar", name = "templar-core", version = templarVersion)
     implementation(group = "com.techshroom.templar", name = "templar-codec-jackson", version = templarVersion)
 

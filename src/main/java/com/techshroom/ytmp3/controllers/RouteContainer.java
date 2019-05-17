@@ -31,6 +31,9 @@ import com.google.common.io.Resources;
 import com.techshroom.lettar.Request;
 import com.techshroom.lettar.Response;
 import com.techshroom.lettar.SimpleResponse;
+import com.techshroom.lettar.addons.FileResponse;
+import com.techshroom.lettar.addons.assets.Asset;
+import com.techshroom.lettar.addons.assets.AssetManager;
 import com.techshroom.lettar.addons.sse.ServerSentEvent;
 import com.techshroom.lettar.annotation.NotFoundHandler;
 import com.techshroom.lettar.annotation.ServerErrorHandler;
@@ -74,7 +77,13 @@ public class RouteContainer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteContainer.class);
 
     private final TemplateRenderer index = VelocityTemplateRenderer.load("com/techshroom/ytmp3/templates/index.html.vm");
-    private final AssetCacher assets = new AssetCacher();
+    private final AssetManager assetManager = AssetManager.create(path -> {
+        try {
+            return Asset.create(Resources.getResource(path).openStream());
+        } catch (IllegalArgumentException noResource) {
+            return null;
+        }
+    });
 
     @Path("/")
     @Produces("text/html")
@@ -226,23 +235,8 @@ public class RouteContainer {
     }
 
     @Path("/assets/{**}")
-    public Response<Object> assets(String path) throws IOException {
-        URL resource;
-        try {
-            resource = Resources.getResource(path);
-        } catch (IllegalArgumentException notFound) {
-            return SimpleResponse.of(404, path);
-        }
-
-        File fileResource = assets.getAsset(resource).toFile();
-
-        return SimpleResponse.builder()
-            .headers(ImmutableMap.of(
-                "content-type", getContentType(fileResource),
-                "content-length", String.valueOf(fileResource.length())))
-            .ok_200()
-            .body(new BufferedInputStream(new FileInputStream(fileResource)))
-            .build();
+    public Response<?> assets(String path) throws IOException {
+        return assetManager.getAsset(path);
     }
 
     private final Detector detector = new DefaultDetector();
