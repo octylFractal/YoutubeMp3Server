@@ -10,9 +10,14 @@ plugins {
 inciseBlue {
     util {
         javaVersion = JavaVersion.VERSION_11
+        addRepositories = false
     }
     ide()
     license()
+}
+
+repositories {
+    jcenter()
 }
 
 configurations.all {
@@ -26,7 +31,6 @@ val logbackVersion = "1.2.3"
 val jacksonVersion = "2.9.8"
 val guavaVersion = "27.1-jre"
 val templarVersion = "0.2.0"
-repositories {mavenLocal()}
 dependencies {
     implementation(group = "org.slf4j", name = "slf4j-api", version = slf4jVersion)
     compileOnly(group = "com.techshroom", name = "jsr305-plus", version = "0.0.1")
