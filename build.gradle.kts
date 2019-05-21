@@ -25,14 +25,15 @@ val slf4jVersion = "1.7.26"
 val logbackVersion = "1.2.3"
 val jacksonVersion = "2.9.8"
 val guavaVersion = "27.1-jre"
-val templarVersion = "0.1.5"
+val templarVersion = "0.2.0"
+repositories {mavenLocal()}
 dependencies {
     implementation(group = "org.slf4j", name = "slf4j-api", version = slf4jVersion)
     compileOnly(group = "com.techshroom", name = "jsr305-plus", version = "0.0.1")
     implementation(group = "org.mapdb", name = "mapdb", version = "3.0.7")
     implementation(group = "ch.qos.logback", name = "logback-core", version = logbackVersion)
     implementation(group = "ch.qos.logback", name = "logback-classic", version = logbackVersion)
-    implementation(group = "com.techshroom", name = "lettar", version = "0.4.0")
+    implementation(group = "com.techshroom", name = "lettar", version = "0.4.1")
     implementation(group = "com.techshroom.templar", name = "templar-core", version = templarVersion)
     implementation(group = "com.techshroom.templar", name = "templar-codec-jackson", version = templarVersion)
 
@@ -44,7 +45,6 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-guava", version = jacksonVersion)
 
     implementation(group = "org.apache.velocity", name = "velocity-engine-core", version = "2.1")
-    implementation(group = "org.apache.tika", name = "tika-core", version = "1.20")
 
     implementation(group = "com.google.guava", name = "guava", version = guavaVersion)
 

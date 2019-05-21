@@ -31,7 +31,6 @@ import com.google.common.io.Resources;
 import com.techshroom.lettar.Request;
 import com.techshroom.lettar.Response;
 import com.techshroom.lettar.SimpleResponse;
-import com.techshroom.lettar.addons.FileResponse;
 import com.techshroom.lettar.addons.assets.Asset;
 import com.techshroom.lettar.addons.assets.AssetManager;
 import com.techshroom.lettar.addons.sse.ServerSentEvent;
@@ -49,18 +48,16 @@ import com.techshroom.ytmp3.conversion.ConversionManager;
 import com.techshroom.ytmp3.conversion.Status;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import javafx.collections.ObservableList;
+import org.apache.tika.detect.CompositeDetector;
 import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.metadata.Metadata;
+import org.apache.tika.detect.NameDetector;
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.Optional;
@@ -68,6 +65,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -83,7 +82,12 @@ public class RouteContainer {
         } catch (IllegalArgumentException noResource) {
             return null;
         }
-    });
+    }, new CompositeDetector(
+        new DefaultDetector(),
+        new NameDetector(ImmutableMap.of(
+            Pattern.compile(".+\\.css"), MediaType.text("css")
+        ))
+    ));
 
     @Path("/")
     @Produces("text/html")
@@ -94,38 +98,48 @@ public class RouteContainer {
     @Path("/mp3ify")
     @JsonBodyCodec
     public Response<Object> mp3ifyList(Request<?> request) {
-        long from;
+        Long from;
         try {
-            from = Long.parseLong(request.getQueryParts().getSingleValueOrDefault("from", ""));
-            if (from < 0) {
+            from = request.getQueryParts().get("from").stream()
+                .map(Long::parseLong)
+                .findFirst()
+                .orElse(null);
+            if (from != null && from < 0) {
                 throw new IllegalArgumentException("from.too.small");
             }
         } catch (NumberFormatException e) {
-            from = Long.MIN_VALUE;
+            from = null;
         }
-        long to;
+        Long to;
         try {
-            to = Long.parseLong(request.getQueryParts().getSingleValueOrDefault("to", ""));
-            if (to < from) {
+            to = request.getQueryParts().get("to").stream()
+                .map(Long::parseLong)
+                .findFirst()
+                .orElse(null);
+            if (from != null && to != null && to < from) {
                 throw new IllegalArgumentException("to.too.small");
             }
         } catch (NumberFormatException e) {
-            to = Long.MAX_VALUE;
+            to = null;
         }
 
-        long f = from;
-        long t = to;
-        return SimpleResponse.of(200, ConversionManager.conversions()
-            .filter(c -> c.getStatus() == Status.SUCCESSFUL)
-            .filter(c -> {
+        Stream<Conversion> conversionStream = ConversionManager.conversions()
+            .filter(c -> c.getStatus() == Status.SUCCESSFUL);
+        if (from != null || to != null) {
+            long f = from == null ? Long.MIN_VALUE : from;
+            long t = to == null ? Long.MAX_VALUE : to;
+            conversionStream = conversionStream.filter(c -> {
                 long millis = c.getEndTime().toMillis();
                 return millis >= f && millis < t;
-            })
-            .sorted(Comparator.comparing(Conversion::getEndTime).reversed())
-            .map(c -> ImmutableMap.of(
-                "id", c.getId(),
-                "name", c.getFileName()))
-            .collect(toImmutableList()));
+            });
+        }
+        return SimpleResponse.of(200,
+            conversionStream
+                .sorted(Comparator.comparing(Conversion::getEndTime).reversed())
+                .map(c -> ImmutableMap.of(
+                    "id", c.getId(),
+                    "name", c.getFileName()))
+                .collect(toImmutableList()));
     }
 
     @Method(HttpMethod.POST)
@@ -237,18 +251,6 @@ public class RouteContainer {
     @Path("/assets/{**}")
     public Response<?> assets(String path) throws IOException {
         return assetManager.getAsset(path);
-    }
-
-    private final Detector detector = new DefaultDetector();
-
-    private String getContentType(File resource) {
-        Metadata metadata = new Metadata();
-        metadata.add(Metadata.RESOURCE_NAME_KEY, resource.getName());
-        try (InputStream stream = new BufferedInputStream(new FileInputStream(resource))) {
-            return detector.detect(stream, metadata).toString();
-        } catch (Exception e) {
-            return "application/octet-stream";
-        }
     }
 
     private static Optional<Conversion> conversion(String id) {
