@@ -124,6 +124,13 @@ public class ConversionManager {
         return CONVERSION_MAP.get(id);
     }
 
+    public static void deleteConversion(String id) {
+        Conversion conversion = CONVERSION_MAP.remove(id);
+        if (conversion != null) {
+            RESUBMIT_MAP.remove(conversion.getStoreName());
+        }
+    }
+
     public static void refresh(Conversion conversion) {
         if (conversion.getId() != null) {
             CONVERSION_MAP.put(conversion.getId(), conversion);

@@ -139,6 +139,18 @@ public class DiskMap<V> {
         }
     }
 
+    public V remove(String key) {
+        checkNotNull(key, "key");
+        lock.writeLock().lock();
+        try {
+            V removed = map.remove(key);
+            doWrite();
+            return removed;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     public Map<String, V> snapshot() {
         lock.readLock().lock();
         try {

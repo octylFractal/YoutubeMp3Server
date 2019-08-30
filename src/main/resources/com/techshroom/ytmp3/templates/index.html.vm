@@ -56,7 +56,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-block">
-                    <ul class="list" id="conversion-history">
+                    <ul class="list-group list-group-flush" id="conversion-history">
                     </ul>
                 </div>
             </div>

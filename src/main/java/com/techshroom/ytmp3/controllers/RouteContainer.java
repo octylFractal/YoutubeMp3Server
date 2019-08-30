@@ -156,6 +156,18 @@ public class RouteContainer {
         return SimpleResponse.of(201, ConversionManager.newConversion(video).getId());
     }
 
+    @Method(HttpMethod.DELETE)
+    @Path("/mp3ify/{*}")
+    @JsonBodyCodec
+    public Response<Object> mp3ifyDelete(String id) {
+        return conversion(id)
+            .map(conversion -> {
+                ConversionManager.deleteConversion(conversion.getId());
+                return SimpleResponse.of(204, null);
+            })
+            .orElseGet(() -> SimpleResponse.of(404, id));
+    }
+
     @Path("/mp3ify/{*}/status")
     @JsonBodyCodec
     public Response<Object> mp3ifyStatus(String id) {

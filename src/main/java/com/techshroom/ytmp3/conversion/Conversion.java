@@ -194,6 +194,7 @@ public class Conversion implements Runnable {
         return fileName;
     }
 
+    @Nullable
     private transient FileTime cachedFileTime;
 
     @JsonIgnore

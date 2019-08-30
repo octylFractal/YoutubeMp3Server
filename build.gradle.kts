@@ -52,9 +52,9 @@ dependencies {
 
     implementation(group = "com.google.guava", name = "guava", version = guavaVersion)
 
-    implementation(group = "org.openjfx", name = "javafx-base", version = "11.0.2")
+    implementation(group = "org.openjfx", name = "javafx-base", version = "12.0.2")
     listOf("mac", "win", "linux").forEach {
-        implementation(group = "org.openjfx", name = "javafx-base", version = "11.0.2", classifier = it)
+        implementation(group = "org.openjfx", name = "javafx-base", version = "12.0.2", classifier = it)
     }
 
     implementation(group = "com.techshroom", name = "greenish-jungle", version = "0.0.3")

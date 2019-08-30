@@ -122,9 +122,42 @@ function rotateArrow(side = undefined) {
     arrowPromise.then(() => arrowPromise = undefined);
 }
 
+/**
+ * @param {string} id
+ * @param {string} name
+ */
+function confirmDelete(id, name) {
+    // run in next tick to not trigger click-handler warnings
+    Promise.resolve().then(() => {
+        if (confirm(`Are you sure you want to delete ${name}?`)) {
+            $.ajax({
+                url: `/mp3ify/${id}`,
+                method: "DELETE"
+            })
+                .fail((xhr, status, err) => {
+                    console.warn("error", err, "status", status);
+                    alert("Failed to delete ${name}. Apologies.");
+                })
+                .done(() => {
+                    $(`#item-${id}`).remove()
+                })
+        }
+    })
+}
+
 function getHistory() {
     $.get('/mp3ify').then(convs => {
-        $history['html'](convs.map(c => `<li><a href="/mp3ify/${c.id}/download">Download ${c.name}!</a></li>`).join('\n'));
+        $history['html'](convs
+            .map(c => `
+                <li class="list-group-item p-2" id="item-${c.id}">
+                    <a href="/mp3ify/${c.id}/download">Download ${c.name}!</a>
+                    <button type="button" class="close mx-3" aria-label="Delete"
+                        onclick="confirmDelete('${c.id}', '${c.name}')">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </li>
+                `.trim())
+            .join('\n'));
     });
 }
 
