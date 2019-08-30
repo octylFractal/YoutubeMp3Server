@@ -1,15 +1,15 @@
 import java.nio.file.Files
 
 plugins {
-    id("net.researchgate.release") version "2.8.0"
-    id("com.techshroom.incise-blue") version "0.3.13"
+    id("net.researchgate.release") version "2.8.1"
+    id("com.techshroom.incise-blue") version "0.3.14"
     id("java")
     id("application")
 }
 
 inciseBlue {
     util {
-        javaVersion = JavaVersion.VERSION_11
+        javaVersion = JavaVersion.VERSION_12
         addRepositories = false
     }
     ide()
@@ -26,10 +26,10 @@ configurations.all {
     }
 }
 
-val slf4jVersion = "1.7.26"
+val slf4jVersion = "1.7.28"
 val logbackVersion = "1.2.3"
 val jacksonVersion = "2.9.8"
-val guavaVersion = "27.1-jre"
+val guavaVersion = "28.1-jre"
 val templarVersion = "0.2.0"
 dependencies {
     implementation(group = "org.slf4j", name = "slf4j-api", version = slf4jVersion)
@@ -59,10 +59,10 @@ dependencies {
 
     implementation(group = "com.techshroom", name = "greenish-jungle", version = "0.0.3")
 
-    compileOnly(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc4")
-    annotationProcessor(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc4")
-    compileOnly(group = "com.google.auto.value", name = "auto-value-annotations", version = "1.6.5")
-    annotationProcessor(group = "com.google.auto.value", name = "auto-value", version = "1.6.5")
+    compileOnly(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc6")
+    annotationProcessor(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc6")
+    compileOnly(group = "com.google.auto.value", name = "auto-value-annotations", version = "1.6.6")
+    annotationProcessor(group = "com.google.auto.value", name = "auto-value", version = "1.6.6")
 
     testImplementation(group = "junit", name = "junit", version = "4.12")
 }
