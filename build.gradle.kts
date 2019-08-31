@@ -37,7 +37,7 @@ dependencies {
     implementation(group = "org.mapdb", name = "mapdb", version = "3.0.7")
     implementation(group = "ch.qos.logback", name = "logback-core", version = logbackVersion)
     implementation(group = "ch.qos.logback", name = "logback-classic", version = logbackVersion)
-    implementation(group = "com.techshroom", name = "lettar", version = "0.4.1")
+    implementation(group = "com.techshroom", name = "lettar", version = "0.5.1")
     implementation(group = "com.techshroom.templar", name = "templar-core", version = templarVersion)
     implementation(group = "com.techshroom.templar", name = "templar-codec-jackson", version = templarVersion)
 

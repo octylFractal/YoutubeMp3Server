@@ -51,6 +51,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
@@ -95,6 +96,16 @@ public class Conversion implements Runnable {
         .orElseThrow(() -> new IllegalStateException("Missing youtube-dl!")).toAbsolutePath().toString();
 
     private static final Pattern UNSAFE_FILE_NAME = Pattern.compile("[/\\\\?%*:|\"<>]");
+
+    static void remove(String storeName) {
+        VIDEO_ID_MAP.remove(storeName);
+        VIDEO_ID_RECORDS.commit();
+        try {
+            Files.deleteIfExists(DEST_DIR.resolve(storeName));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     // Stores the entire event stream so it can be replayed from any point
     private transient final ObservableList<ServerSentEvent> events = FXCollections.observableList(new CopyOnWriteArrayList<>());
@@ -283,7 +294,7 @@ public class Conversion implements Runnable {
 
                 fileName = stripId(resultFile.getFileName().toString());
 
-                Files.move(resultFile, DEST_DIR.resolve(storeName));
+                Files.move(resultFile, DEST_DIR.resolve(storeName), StandardCopyOption.REPLACE_EXISTING);
 
                 VIDEO_ID_MAP.put(storeName, fileName);
                 VIDEO_ID_RECORDS.commit();

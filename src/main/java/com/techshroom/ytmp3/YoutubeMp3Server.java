@@ -36,6 +36,8 @@ import com.techshroom.templar.HttpRouterHandler;
 import com.techshroom.templar.HttpServerBootstrap;
 import com.techshroom.ytmp3.controllers.RouteContainer;
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class YoutubeMp3Server {
 
@@ -44,6 +46,7 @@ public class YoutubeMp3Server {
         CONFIG.create("host", Loaders.forString(), "0.0.0.0");
     private static final PropOrEnvConfigOption<Integer> PORT =
         CONFIG.create("port", Loaders.forIntInRange(0, 65565), 80);
+    private static final Logger LOGGER = LoggerFactory.getLogger(YoutubeMp3Server.class);
 
     public static void main(String[] args) {
         Router<ByteBuf, Object> router = new PipelineRouterInitializer()
@@ -52,6 +55,7 @@ public class YoutubeMp3Server {
         HttpServerBootstrap bootstrap = new HttpServerBootstrap(
             HOST.get(), PORT.get(), () -> new HttpInitializer(new HttpRouterHandler(router))
         );
+        LOGGER.info("Starting YoutubeMp3Server on {}:{}", HOST.get(), PORT.get());
         bootstrap.start();
     }
 }

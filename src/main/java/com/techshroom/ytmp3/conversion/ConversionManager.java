@@ -94,20 +94,9 @@ public class ConversionManager {
             // ensure that the conversion isn't already happening
             Conversion activeConversion = RESUBMIT_MAP.get(conversion.getStoreName());
             if (activeConversion != null) {
-                // use get to force load from disk
-                if (CONVERSION_MAP.get(activeConversion.getId()) != null) {
+                if (tryReuseConversion(conversion, activeConversion)) {
                     return activeConversion;
                 }
-                // delete the file
-                try {
-                    Path resultFile = activeConversion.getResultFile();
-                    if (resultFile != null) {
-                        Files.deleteIfExists(resultFile);
-                    }
-                } catch (IOException ignored) {
-                }
-                LOGGER.warn("Tried to use cached conversion for " + conversion.getStoreName() + " with ID " + activeConversion.getId()
-                    + " but the ID didn't exist in conversion map!");
             }
 
             CONVERSION_POOL.submit(conversion);
@@ -119,6 +108,29 @@ public class ConversionManager {
         return conversion;
     }
 
+    private static boolean tryReuseConversion(Conversion conversion, Conversion activeConversion) {
+        Conversion latestConversion = getConversion(activeConversion.getId());
+        boolean notFailed = latestConversion == null || latestConversion.getStatus() != Status.FAILED;
+        if (latestConversion != null && notFailed) {
+            // re-use if not failed
+            return true;
+        }
+        // delete the file
+        try {
+            Path resultFile = activeConversion.getResultFile();
+            if (resultFile != null) {
+                Files.deleteIfExists(resultFile);
+            }
+        } catch (IOException ignored) {
+        }
+        if (notFailed) {
+            // warn on disconnects between the two maps
+            LOGGER.warn("Tried to use cached conversion for " + conversion.getStoreName() + " with ID " + activeConversion.getId()
+                + " but the ID didn't exist in conversion map!");
+        }
+        return false;
+    }
+
     @Nullable
     public static Conversion getConversion(String id) {
         return CONVERSION_MAP.get(id);
@@ -128,17 +140,14 @@ public class ConversionManager {
         Conversion conversion = CONVERSION_MAP.remove(id);
         if (conversion != null) {
             RESUBMIT_MAP.remove(conversion.getStoreName());
+            Conversion.remove(conversion.getStoreName());
         }
     }
 
     public static void refresh(Conversion conversion) {
-        if (conversion.getId() != null) {
-            CONVERSION_MAP.put(conversion.getId(), conversion);
-        }
+        CONVERSION_MAP.put(conversion.getId(), conversion);
         // we can also store the video ID tag for checking re-submission
-        if (conversion.getStoreName() != null) {
-            RESUBMIT_MAP.put(conversion.getStoreName(), conversion);
-        }
+        RESUBMIT_MAP.put(conversion.getStoreName(), conversion);
     }
 
     public static Stream<Conversion> conversions() {

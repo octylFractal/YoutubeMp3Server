@@ -46,6 +46,7 @@ import com.techshroom.ytmp3.VelocityTemplateRenderer;
 import com.techshroom.ytmp3.conversion.Conversion;
 import com.techshroom.ytmp3.conversion.ConversionManager;
 import com.techshroom.ytmp3.conversion.Status;
+import com.techshroom.ytmp3.util.HttpFileName;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import javafx.collections.ObservableList;
 import org.apache.tika.detect.CompositeDetector;
@@ -253,7 +254,7 @@ public class RouteContainer {
             .ok_200()
             .body(stream)
             .headers(ImmutableMap.of(
-                "content-disposition", "attachment; filename=\"" + conversion.getFileName() + "\"",
+                "content-disposition", HttpFileName.encodeDisposition(conversion.getFileName()),
                 "content-length", String.valueOf(Files.size(conversion.getResultFile())),
                 // ensure netty gzip is not applied
                 "content-encoding", "identity"))
