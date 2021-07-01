@@ -53,8 +53,9 @@ public class ConversionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConversionManager.class);
 
     private static final UniqueId ID = new UniqueId("video");
-    private static final ExecutorService CONVERSION_POOL = Executors.newFixedThreadPool(4,
-        new ThreadFactoryBuilder().setNameFormat("conversion-%d").setDaemon(true).build());
+    private static final ExecutorService CONVERSION_POOL = Executors.newCachedThreadPool(
+        new ThreadFactoryBuilder().setNameFormat("conversion-%d").setDaemon(true).build()
+    );
 
     static {
         try {

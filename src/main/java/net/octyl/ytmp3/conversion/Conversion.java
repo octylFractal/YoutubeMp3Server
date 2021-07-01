@@ -37,6 +37,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -65,6 +67,7 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class Conversion implements Runnable {
 
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Path DEST_DIR = Paths.get("converted");
     private static final Path WORKING_DIR;
 
@@ -177,6 +180,7 @@ public class Conversion implements Runnable {
     }
 
     public void setStatus(Status status) {
+        LOGGER.info(storeName + ": Status set to " + status);
         this.statusProperty.set(status);
     }
 
@@ -273,6 +277,7 @@ public class Conversion implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.info("Starting conversion for " + storeName + " (" + videoId + ")");
         canFireEvents = true;
         if (VIDEO_ID_MAP.containsKey(storeName)) {
             fileName = VIDEO_ID_MAP.get(storeName);
@@ -282,6 +287,7 @@ public class Conversion implements Runnable {
         }
         ByteArrayOutputStream cap = new ByteArrayOutputStream();
         try {
+            LOGGER.info("Starting youtube-dl process");
             process = ProcessManager.startProcess(this::newProcess, new EventOutputStream(cap));
             setStatus(Status.CONVERTING);
             // wait for process
