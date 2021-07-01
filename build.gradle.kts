@@ -17,6 +17,7 @@ dependencies {
     compileOnly(libs.auto.value.annotations)
     annotationProcessor(libs.auto.service.processor)
     annotationProcessor(libs.auto.value.processor)
+    compileOnly(libs.checkerframework.qual)
 
     implementation(libs.mapdb)
 
