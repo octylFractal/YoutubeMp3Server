@@ -25,8 +25,8 @@
 
 package conversions.videoid;
 
-import com.techshroom.ytmp3.conversion.videoid.VideoId;
-import com.techshroom.ytmp3.conversion.videoid.YoutubeVideoHandler;
+import net.octyl.ytmp3.conversion.videoid.VideoId;
+import net.octyl.ytmp3.conversion.videoid.YoutubeVideoHandler;
 import org.junit.Test;
 
 import javax.annotation.Nullable;

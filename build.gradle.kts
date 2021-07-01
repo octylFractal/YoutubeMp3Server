@@ -2,28 +2,14 @@ import java.nio.file.Files
 
 plugins {
     id("net.researchgate.release") version "2.8.1"
-    id("com.techshroom.incise-blue") version "0.3.14"
-    id("java")
-    id("application")
+    java
+    application
 }
 
-inciseBlue {
-    util {
-        javaVersion = JavaVersion.VERSION_12
-        addRepositories = false
-    }
-    ide()
-    license()
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(16))
 
 repositories {
-    jcenter()
-}
-
-configurations.all {
-    resolutionStrategy {
-        force("io.netty:netty-all:4.1.36.Final")
-    }
+    mavenCentral()
 }
 
 val slf4jVersion = "1.7.28"
@@ -67,7 +53,7 @@ dependencies {
     testImplementation(group = "junit", name = "junit", version = "4.12")
 }
 
-application.mainClassName = "com.techshroom.ytmp3.YoutubeMp3Server"
+application.mainClass.set("net.octyl.ytmp3.YoutubeMp3Server")
 
 tasks.run.configure {
     environment("YTMP3_HOST", "localhost")
