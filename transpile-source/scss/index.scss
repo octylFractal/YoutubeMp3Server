@@ -1,3 +1,5 @@
+@use "sass:math";
+
 #download-box-row {
     margin: 0;
 }
@@ -20,7 +22,7 @@ $arrow-side-length: 20px;
 $arrow-height: 36px;
 
 $larger-triangle-middle: calc(50% - #{$arrow-border-middle-offset});
-$smaller-triangle-middle: calc(50% - #{$arrow-middle-offset / 2 + 5});
+$smaller-triangle-middle: calc(50% - #{math.div($arrow-middle-offset, 2) + 5});
 
 $transition-details: transform 1s, top 1s, bottom 1s, left 1s, right 1s;
 

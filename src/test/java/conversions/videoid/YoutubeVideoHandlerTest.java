@@ -27,14 +27,14 @@ package conversions.videoid;
 
 import net.octyl.ytmp3.conversion.videoid.VideoId;
 import net.octyl.ytmp3.conversion.videoid.YoutubeVideoHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class YoutubeVideoHandlerTest {
 
@@ -45,35 +45,35 @@ public class YoutubeVideoHandlerTest {
         if (result.isPresent()) {
             VideoId id = result.get();
             assertEquals("youtube", id.getProvider());
-            assertNotNull("result should not have been generated", expectedId);
+            assertNotNull(expectedId, "result should not have been generated");
             assertEquals(expectedId, id.getId());
         } else {
-            assertNull("result should have been generated", expectedId);
+            assertNull(expectedId, "result should have been generated");
         }
     }
 
     @Test
-    public void normalYoutubeUrl() throws Exception {
+    void normalYoutubeUrl() {
         assertVideoId("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ");
     }
 
     @Test
-    public void normalNoProtocolYoutubeUrl() throws Exception {
+    void normalNoProtocolYoutubeUrl() {
         assertVideoId("www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ");
     }
 
     @Test
-    public void shareYoutubeUrl() throws Exception {
+    void shareYoutubeUrl() {
         assertVideoId("https://youtu.be/dQw4w9WgXcQ", "dQw4w9WgXcQ");
     }
 
     @Test
-    public void embedYoutubeUrl() throws Exception {
+    void embedYoutubeUrl() {
         assertVideoId("https://www.youtube.com/embed/dQw4w9WgXcQ", "dQw4w9WgXcQ");
     }
 
     @Test
-    public void rawId() throws Exception {
+    void rawId() {
         assertVideoId("dQw4w9WgXcQ", null);
     }
 

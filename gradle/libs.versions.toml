@@ -1,0 +1,98 @@
+[versions]
+templar = "0.2.0"
+autoService = "1.0"
+autoValue = "1.8.1"
+
+[libraries.checkerframework-qual]
+module = "org.checkerframework:checker-qual"
+version = "3.15.0"
+
+[libraries.auto-service-processor]
+module = "com.google.auto.service:auto-service"
+version.ref = "autoService"
+
+[libraries.auto-service-annotations]
+module = "com.google.auto.service:auto-service-annotations"
+version.ref = "autoService"
+
+[libraries.auto-value-processor]
+module = "com.google.auto.value:auto-value"
+version.ref = "autoValue"
+
+[libraries.auto-value-annotations]
+module = "com.google.auto.value:auto-value-annotations"
+version.ref = "autoValue"
+
+[libraries.mapdb]
+module = "org.mapdb:mapdb"
+version = "3.0.8"
+
+[libraries.log4j-bom]
+module = "org.apache.logging.log4j:log4j-bom"
+version = "2.14.1"
+
+[libraries.log4j-api]
+module = "org.apache.logging.log4j:log4j-api"
+
+[libraries.log4j-core]
+module = "org.apache.logging.log4j:log4j-core"
+
+[libraries.guava]
+module = "com.google.guava:guava"
+version = "30.1.1-jre"
+
+[libraries.javafx-base]
+module = "org.openjfx:javafx-base"
+version = "16"
+
+[libraries.lettar]
+module = "com.techshroom:lettar"
+version = "0.5.1"
+
+[libraries.templar-core]
+module = "com.techshroom.templar:templar-core"
+version.ref = "templar"
+
+[libraries.templar-codec-jackson]
+module = "com.techshroom.templar:templar-codec-jackson"
+version.ref = "templar"
+
+[libraries.jackson-bom]
+module = "com.fasterxml.jackson:jackson-bom"
+version = "2.12.3"
+
+[libraries.jackson-annotations]
+module = "com.fasterxml.jackson.core:jackson-annotations"
+
+[libraries.jackson-core]
+module = "com.fasterxml.jackson.core:jackson-core"
+
+[libraries.jackson-databind]
+module = "com.fasterxml.jackson.core:jackson-databind"
+
+[libraries.jackson-datatype-jsr310]
+module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+
+[libraries.jackson-datatype-jdk8]
+module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+
+[libraries.jackson-datatype-guava]
+module = "com.fasterxml.jackson.datatype:jackson-datatype-guava"
+
+[libraries.velocity]
+module = "org.apache.velocity:velocity-engine-core"
+version = "2.3"
+
+[libraries.greenishJungle]
+module = "com.techshroom:greenish-jungle"
+version = "0.0.3"
+
+[libraries.junit-bom]
+module = "org.junit:junit-bom"
+version = "5.7.2"
+
+[libraries.junit-jupiter-api]
+module = "org.junit.jupiter:junit-jupiter-api"
+
+[libraries.junit-jupiter-engine]
+module = "org.junit.jupiter:junit-jupiter-engine"

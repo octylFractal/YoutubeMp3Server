@@ -12,45 +12,44 @@ repositories {
     mavenCentral()
 }
 
-val slf4jVersion = "1.7.28"
-val logbackVersion = "1.2.3"
-val jacksonVersion = "2.9.8"
-val guavaVersion = "28.1-jre"
-val templarVersion = "0.2.0"
 dependencies {
-    implementation(group = "org.slf4j", name = "slf4j-api", version = slf4jVersion)
-    compileOnly(group = "com.techshroom", name = "jsr305-plus", version = "0.0.1")
-    implementation(group = "org.mapdb", name = "mapdb", version = "3.0.7")
-    implementation(group = "ch.qos.logback", name = "logback-core", version = logbackVersion)
-    implementation(group = "ch.qos.logback", name = "logback-classic", version = logbackVersion)
-    implementation(group = "com.techshroom", name = "lettar", version = "0.5.1")
-    implementation(group = "com.techshroom.templar", name = "templar-core", version = templarVersion)
-    implementation(group = "com.techshroom.templar", name = "templar-codec-jackson", version = templarVersion)
+    compileOnly(libs.auto.service.annotations)
+    compileOnly(libs.auto.value.annotations)
+    annotationProcessor(libs.auto.service.processor)
+    annotationProcessor(libs.auto.value.processor)
 
-    implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = jacksonVersion)
-    implementation(group = "com.fasterxml.jackson.core", name = "jackson-annotations", version = jacksonVersion)
-    implementation(group = "com.fasterxml.jackson.core", name = "jackson-core", version = jacksonVersion)
-    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version = jacksonVersion)
-    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jdk8", version = jacksonVersion)
-    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-guava", version = jacksonVersion)
+    implementation(libs.mapdb)
 
-    implementation(group = "org.apache.velocity", name = "velocity-engine-core", version = "2.1")
+    implementation(platform(libs.log4j.bom))
+    implementation(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
 
-    implementation(group = "com.google.guava", name = "guava", version = guavaVersion)
+    implementation(libs.lettar)
+    implementation(libs.templar.core)
+    implementation(libs.templar.codec.jackson)
 
-    implementation(group = "org.openjfx", name = "javafx-base", version = "12.0.2")
+    implementation(platform(libs.jackson.bom))
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.jackson.datatype.guava)
+
+    implementation(libs.velocity)
+
+    implementation(libs.guava)
+
+    implementation(libs.javafx.base)
     listOf("mac", "win", "linux").forEach {
-        implementation(group = "org.openjfx", name = "javafx-base", version = "12.0.2", classifier = it)
+        implementation(variantOf(libs.javafx.base) { classifier(it) })
     }
 
-    implementation(group = "com.techshroom", name = "greenish-jungle", version = "0.0.3")
+    implementation(libs.greenishJungle)
 
-    compileOnly(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc6")
-    annotationProcessor(group = "com.google.auto.service", name = "auto-service", version = "1.0-rc6")
-    compileOnly(group = "com.google.auto.value", name = "auto-value-annotations", version = "1.6.6")
-    annotationProcessor(group = "com.google.auto.value", name = "auto-value", version = "1.6.6")
-
-    testImplementation(group = "junit", name = "junit", version = "4.12")
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 application.mainClass.set("net.octyl.ytmp3.YoutubeMp3Server")
