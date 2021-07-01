@@ -37,6 +37,7 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -75,8 +76,16 @@ public class DiskMap<V> {
 
     // must hold lock
     private void doWrite() {
-        try (Writer writer = Files.newBufferedWriter(file)) {
-            mapper.writeValue(writer, map);
+        try {
+            var tmp = Files.createTempFile(file.getParent(), "diskmap-tmp", ".json");
+            try {
+                try (Writer writer = Files.newBufferedWriter(tmp)) {
+                    mapper.writeValue(writer, map);
+                }
+                Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } finally {
+                Files.deleteIfExists(tmp);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -112,7 +121,8 @@ public class DiskMap<V> {
             try {
                 value = mapper.readValue(mapper.treeAsTokens(field.getValue()), valueType);
             } catch (IOException ex) {
-                value = null;
+                // Skip this value
+                continue;
             }
             map.put(field.getKey(), value);
         }
