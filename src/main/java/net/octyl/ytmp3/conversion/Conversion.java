@@ -180,8 +180,12 @@ public class Conversion implements Runnable {
     }
 
     public void setStatus(Status status) {
-        LOGGER.info(storeName + ": Status set to " + status);
         this.statusProperty.set(status);
+    }
+
+    public void setStatusLogged(Status status) {
+        LOGGER.info(storeName + ": Status set to " + status);
+        setStatus(status);
     }
 
     @Nullable
@@ -271,7 +275,7 @@ public class Conversion implements Runnable {
     }
 
     private void fail(String reason) {
-        setStatus(Status.FAILED);
+        setStatusLogged(Status.FAILED);
         failureReason = reason;
     }
 
@@ -282,14 +286,14 @@ public class Conversion implements Runnable {
         if (VIDEO_ID_MAP.containsKey(storeName)) {
             fileName = VIDEO_ID_MAP.get(storeName);
 
-            setStatus(Status.SUCCESSFUL);
+            setStatusLogged(Status.SUCCESSFUL);
             return;
         }
         ByteArrayOutputStream cap = new ByteArrayOutputStream();
         try {
             LOGGER.info("Starting youtube-dl process");
             process = ProcessManager.startProcess(this::newProcess, new EventOutputStream(cap));
-            setStatus(Status.CONVERTING);
+            setStatusLogged(Status.CONVERTING);
             // wait for process
             Process process = getProcessHandle();
             checkNotNull(process, "process disappeared");
@@ -305,7 +309,7 @@ public class Conversion implements Runnable {
                 VIDEO_ID_MAP.put(storeName, fileName);
                 VIDEO_ID_RECORDS.commit();
 
-                setStatus(Status.SUCCESSFUL);
+                setStatusLogged(Status.SUCCESSFUL);
                 return;
             }
             fail("Bad Exit Code " + exitCode);
