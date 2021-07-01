@@ -37,6 +37,9 @@ module = "org.apache.logging.log4j:log4j-api"
 [libraries.log4j-core]
 module = "org.apache.logging.log4j:log4j-core"
 
+[libraries.log4j-slf4jImpl]
+module = "org.apache.logging.log4j:log4j-slf4j-impl"
+
 [libraries.guava]
 module = "com.google.guava:guava"
 version = "30.1.1-jre"

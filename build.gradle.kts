@@ -24,6 +24,14 @@ repositories {
 }
 
 dependencies {
+    constraints {
+        implementation("io.netty:netty-all:jar") {
+            version {
+                require("4.1.65.Final")
+            }
+            because("It's the latest right now")
+        }
+    }
     compileOnly(libs.auto.service.annotations)
     compileOnly(libs.auto.value.annotations)
     annotationProcessor(libs.auto.service.processor)
@@ -35,6 +43,7 @@ dependencies {
     implementation(platform(libs.log4j.bom))
     implementation(libs.log4j.api)
     runtimeOnly(libs.log4j.core)
+    runtimeOnly(libs.log4j.slf4jImpl)
 
     implementation(libs.lettar)
     implementation(libs.templar.core)
