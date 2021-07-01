@@ -1,7 +1,7 @@
 /*
  * This file is part of YoutubeMp3Server, licensed under the MIT License (MIT).
  *
- * Copyright (c) kenzierocks <https://kenzierocks.me/>
+ * Copyright (c) Octavia Togami <https://octyl.net/>
  * Copyright (c) contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

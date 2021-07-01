@@ -1,12 +1,23 @@
 import java.nio.file.Files
 
 plugins {
-    id("net.researchgate.release") version "2.8.1"
     java
     application
+    id("net.researchgate.release") version "2.8.1"
+    id("org.cadixdev.licenser") version "0.6.1"
 }
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+
+license {
+    header(rootProject.file("HEADER.txt"))
+    (this as ExtensionAware).extra.apply {
+        set("name", rootProject.name)
+        for (key in listOf("organization", "url")) {
+            set(key, rootProject.property(key))
+        }
+    }
+}
 
 repositories {
     mavenCentral()

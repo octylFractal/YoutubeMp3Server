@@ -11,18 +11,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kenzierocks/YoutubeMp3Server.git"
+    "url": "git+https://github.com/octylFractal/YoutubeMp3Server.git"
   },
-  "author": "Kenzie Togami",
+  "author": "Octavia Togami",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kenzierocks/YoutubeMp3Server/issues"
+    "url": "https://github.com/octylFractal/YoutubeMp3Server/issues"
   },
   "browserslist": [
     ">0.25%",
     "not dead"
   ],
-  "homepage": "https://github.com/kenzierocks/YoutubeMp3Server#readme",
+  "homepage": "https://github.com/octylFractal/YoutubeMp3Server#readme",
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",

@@ -23,20 +23,27 @@
     THE SOFTWARE.
 -->
 
-<configuration>
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>[%thread/%level][%logger{1}]: %msg %n</pattern>
-		</encoder>
-	</appender>
+<Configuration status="WARN"
+               strict="true"
+               xmlns="http://logging.apache.org/log4j/2.0/config"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
+           https://raw.githubusercontent.com/apache/logging-log4j2/rel/2.14.1/log4j-core/src/main/resources/Log4j-config.xsd">
+    <Appenders>
+        <Console name="SysErr" target="SYSTEM_ERR">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{36}]: %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
 
-	<logger name="com.techshroom.lettar.pipe.impl.SimplePipeline" level="INFO"/>
-	<logger name="com.techshroom.lettar.pipe.PipelineRouterInitializer" level="INFO"/>
-	<logger name="pre-codec-logger" level="INFO"/>
-	<logger name="pre-router-logger" level="INFO"/>
-	<logger name="templar-server" level="INFO"/>
+        <Logger name="com.techshroom.lettar.pipe.impl.SimplePipeline" level="INFO"/>
+        <Logger name="com.techshroom.lettar.pipe.PipelineRouterInitializer" level="INFO"/>
+        <Logger name="pre-codec-logger" level="INFO"/>
+        <Logger name="pre-router-logger" level="INFO"/>
+        <Logger name="templar-server" level="INFO"/>
 
-	<root level="DEBUG">
-		<appender-ref ref="STDOUT" />
-	</root>
-</configuration>
+        <Root level="DEBUG">
+            <AppenderRef ref="SysErr"/>
+        </Root>
+    </Loggers>
+</Configuration>
