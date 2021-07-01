@@ -81,6 +81,13 @@ public class ConversionManager {
 
         CONVERSION_MAP = new DiskMap<>(JSON, VALUE_TYPE, new HashMap<>(), Paths.get("dbs/conversion-map.db"));
         RESUBMIT_MAP = new DiskMap<>(JSON, VALUE_TYPE, new HashMap<>(), Paths.get("dbs/resubmit-map.db"));
+        // any non-finalized items here are bogus
+        RESUBMIT_MAP.snapshot().forEach((k, v) -> {
+            if (v.getStatus() != Status.SUCCESSFUL) {
+                // This is bad
+                RESUBMIT_MAP.remove(k);
+            }
+        });
     }
 
     private static final Lock CONVERSION_START_LOCK = new ReentrantLock();
